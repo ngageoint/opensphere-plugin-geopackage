@@ -1,6 +1,6 @@
 # opensphere-plugin-geopackage
 
-GeoPackage support for to [OpenSphere](https://github.com/ngageoint/opensphere).
+GeoPackage support for [OpenSphere](https://github.com/ngageoint/opensphere).
 
 ## Getting Started
 
