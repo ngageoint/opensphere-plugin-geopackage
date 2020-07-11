@@ -1,327 +1,321 @@
-goog.provide('plugin.geopackage.Exporter');
+goog.module('plugin.geopackage.Exporter');
 
-goog.require('goog.log');
-goog.require('ol.format.GeoJSON');
-goog.require('os.data.RecordField');
-goog.require('os.ex.AbstractExporter');
-goog.require('os.map');
-
-
-/**
- * The GeoPackage exporter.
- * @extends {os.ex.AbstractExporter<ol.Feature>}
- * @constructor
- */
-plugin.geopackage.Exporter = function() {
-  plugin.geopackage.Exporter.base(this, 'constructor');
-  this.log = plugin.geopackage.Exporter.LOGGER_;
-  this.format = new ol.format.GeoJSON();
-
-  /**
-   * @type {!Object<string, null>}
-   * @private
-   */
-  this.tables_ = {};
-
-  /**
-   * @type {!Object<string, string>}
-   * @private
-   */
-  this.idsToTables_ = {};
-
-  /**
-   * @type {string}
-   * @protected
-   */
-  this.lastId = '';
-
-  this.workerHandler_ = this.onMessage.bind(this);
-};
-goog.inherits(plugin.geopackage.Exporter, os.ex.AbstractExporter);
+const GoogEventType = goog.require('goog.events.EventType');
+const log = goog.require('goog.log');
+const GeoJSON = goog.require('ol.format.GeoJSON');
+const AlertManager = goog.require('os.alert.AlertManager');
+const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
+const OSEventType = goog.require('os.events.EventType');
+const RecordField = goog.require('os.data.RecordField');
+const AbstractExporter = goog.require('os.ex.AbstractExporter');
+const {PROJECTION} = goog.require('os.map');
+const {EPSG4326} = goog.require('os.proj');
+const {getElectron, getWorker, ExportCommands, MsgType} = goog.require('plugin.geopackage');
 
 
 /**
  * @type {number}
  */
-plugin.geopackage.Exporter.ID_ = 0;
+let exporterId = 0;
+
+
+/**
+ * @type {string}
+ */
+const RECORD_TIME_START_FIELD = 'TIME_START';
+
+
+/**
+ * @type {string}
+ */
+const RECORD_TIME_STOP_FIELD = 'TIME_STOP';
 
 
 /**
  * Logger
- * @type {goog.log.Logger}
- * @private
- * @const
+ * @type {log.Logger}
  */
-plugin.geopackage.Exporter.LOGGER_ = goog.log.getLogger('plugin.geopackage.Exporter');
+const LOGGER = log.getLogger('plugin.geopackage.Exporter');
 
 
 /**
- * @inheritDoc
+ * The GeoPackage exporter.
+ * @extends {AbstractExporter<ol.Feature>}
  */
-plugin.geopackage.Exporter.prototype.getLabel = function() {
-  return 'GeoPackage';
-};
+class Exporter extends AbstractExporter {
+  /**
+   * Constructor.
+   */
+  constructor() {
+    super();
+    this.log = LOGGER;
+    this.format = new GeoJSON();
 
+    /**
+     * @type {number}
+     * @private
+     */
+    this.index_ = 0;
 
-/**
- * @inheritDoc
- */
-plugin.geopackage.Exporter.prototype.getExtension = function() {
-  return 'gpkg';
-};
+    /**
+     * @type {!Object<string, null>}
+     * @private
+     */
+    this.tables_ = {};
 
+    /**
+     * @type {!Object<string, string>}
+     * @private
+     */
+    this.idsToTables_ = {};
 
-/**
- * @inheritDoc
- */
-plugin.geopackage.Exporter.prototype.getMimeType = function() {
-  return 'application/x-sqlite3';
-};
+    /**
+     * @type {string}
+     * @protected
+     */
+    this.lastId = '';
 
-
-/**
- * @inheritDoc
- */
-plugin.geopackage.Exporter.prototype.isAsync = function() {
-  return true;
-};
-
-
-/**
- * @inheritDoc
- */
-plugin.geopackage.Exporter.prototype.supportsMultiple = function() {
-  return true;
-};
-
-
-/**
- * @inheritDoc
- */
-plugin.geopackage.Exporter.prototype.reset = function() {
-  plugin.geopackage.Exporter.base(this, 'reset');
-  if (this.gpkg_) {
-    this.gpkg_.close();
-  }
-  this.gpkg_ = null;
-  this.tables_ = {};
-  this.idsToTables_ = {};
-  plugin.geopackage.Exporter.ID_++;
-
-  var worker = plugin.geopackage.getWorker();
-  worker.removeEventListener(goog.events.EventType.MESSAGE, this.workerHandler_);
-};
-
-
-/**
- * @param {!string} errorMsg
- * @private
- */
-plugin.geopackage.Exporter.prototype.reportError_ = function(errorMsg) {
-  var msg = 'Error creating ' + this.getLabel() + ' file: ' + errorMsg;
-  os.alertManager.sendAlert(msg, os.alert.AlertEventSeverity.ERROR, this.log);
-
-  if (this.gpkg_) {
-    this.gpkg_.close();
+    this.workerHandler_ = this.onMessage.bind(this);
   }
 
-  this.dispatchEvent(os.events.EventType.ERROR);
-};
+  /**
+   * @inheritDoc
+   */
+  getLabel() {
+    return 'GeoPackage';
+  }
 
-/**
- * @inheritDoc
- */
-plugin.geopackage.Exporter.prototype.process = function() {
-  var worker = plugin.geopackage.getWorker();
-  worker.addEventListener(goog.events.EventType.MESSAGE, this.workerHandler_);
+  /**
+   * @inheritDoc
+   */
+  getExtension() {
+    return 'gpkg';
+  }
 
-  this.lastId = 'export' + plugin.geopackage.Exporter.ID_;
-  this.exportCommand(plugin.geopackage.ExportCommands.CREATE);
-};
+  /**
+   * @inheritDoc
+   */
+  getMimeType() {
+    return 'application/x-sqlite3';
+  }
 
+  /**
+   * @inheritDoc
+   */
+  isAsync() {
+    return true;
+  }
 
-/**
- * @param {Event|GeoPackageWorkerResponse} e
- * @protected
- */
-plugin.geopackage.Exporter.prototype.onMessage = function(e) {
-  var msg = /** @type {GeoPackageWorkerResponse} */ (e instanceof window.Event ? e.data : e);
+  /**
+   * @inheritDoc
+   */
+  supportsMultiple() {
+    return true;
+  }
 
-  if (msg && msg.message.id === this.lastId && msg.message.type === plugin.geopackage.MsgType.EXPORT) {
-    if (msg.type === plugin.geopackage.MsgType.SUCCESS) {
-      if (msg.message.command === plugin.geopackage.ExportCommands.CREATE) {
-        this.index_ = 0;
-      } else if (msg.message.command === plugin.geopackage.ExportCommands.CREATE_TABLE) {
-        this.tables_[/** @type {!string} */ (msg.message.tableName)] = null;
-      } else if (msg.message.command === plugin.geopackage.ExportCommands.GEOJSON) {
-        this.index_++;
-      }
+  /**
+   * @inheritDoc
+   */
+  reset() {
+    super.reset();
 
-      if (msg.message.command === plugin.geopackage.ExportCommands.WRITE) {
-        this.output = [];
-        this.exportCommand(plugin.geopackage.ExportCommands.GET_CHUNK);
-      } else if (msg.message.command === plugin.geopackage.ExportCommands.GET_CHUNK) {
-        if (msg.data instanceof ArrayBuffer) {
-          this.output = msg.data;
-          this.exportCommand(plugin.geopackage.ExportCommands.WRITE_FINISH);
-        } else if (msg.data && msg.data.length) {
-          this.output = this.output.concat(msg.data);
-          this.exportCommand(plugin.geopackage.ExportCommands.GET_CHUNK);
+    this.tables_ = {};
+    this.idsToTables_ = {};
+    exporterId++;
+
+    const worker = getWorker();
+    worker.removeEventListener(GoogEventType.MESSAGE, this.workerHandler_);
+  }
+
+  /**
+   * @param {!string} errorMsg
+   * @private
+   */
+  reportError_(errorMsg) {
+    const msg = 'Error creating ' + this.getLabel() + ' file: ' + errorMsg;
+    AlertManager.getInstance().sendAlert(msg, AlertEventSeverity.ERROR, this.log);
+
+    this.dispatchEvent(OSEventType.ERROR);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  process() {
+    const worker = getWorker();
+    worker.addEventListener(GoogEventType.MESSAGE, this.workerHandler_);
+
+    this.lastId = 'export' + exporterId;
+    this.exportCommand(ExportCommands.CREATE);
+  }
+
+  /**
+   * @param {Event|GeoPackageWorkerResponse} e
+   * @protected
+   */
+  onMessage(e) {
+    const msg = /** @type {GeoPackageWorkerResponse} */ (e instanceof window.Event ? e.data : e);
+
+    if (msg && msg.message.id === this.lastId && msg.message.type === MsgType.EXPORT) {
+      if (msg.type === MsgType.SUCCESS) {
+        if (msg.message.command === ExportCommands.CREATE) {
+          this.index_ = 0;
+        } else if (msg.message.command === ExportCommands.CREATE_TABLE) {
+          this.tables_[/** @type {!string} */ (msg.message.tableName)] = null;
+        } else if (msg.message.command === ExportCommands.GEOJSON) {
+          this.index_++;
+        }
+
+        if (msg.message.command === ExportCommands.WRITE) {
+          this.output = [];
+          this.exportCommand(ExportCommands.GET_CHUNK);
+        } else if (msg.message.command === ExportCommands.GET_CHUNK) {
+          if (msg.data instanceof ArrayBuffer) {
+            this.output = msg.data;
+            this.exportCommand(ExportCommands.WRITE_FINISH);
+          } else if (msg.data && msg.data.length) {
+            this.output = this.output.concat(msg.data);
+            this.exportCommand(ExportCommands.GET_CHUNK);
+          } else {
+            this.exportCommand(ExportCommands.WRITE_FINISH);
+          }
+        } else if (msg.message.command === ExportCommands.WRITE_FINISH) {
+          if (!(this.output instanceof ArrayBuffer)) {
+            this.output = Uint8Array.from(/** @type {!Array<!number>} */ (this.output)).buffer;
+          }
+
+          // remove it
+          const electron = getElectron();
+          if (electron) {
+            electron.unlinkFile('tmp.gpkg', (err) => {
+              if (err) {
+                log.error(LOGGER, 'Could not delete tmp.gpkg!');
+              } else {
+                log.info(LOGGER, 'Removed tmp.gpkg');
+              }
+            });
+          }
+
+          this.dispatchEvent(OSEventType.COMPLETE);
         } else {
-          this.exportCommand(plugin.geopackage.ExportCommands.WRITE_FINISH);
+          this.parseNext_();
         }
-      } else if (msg.message.command === plugin.geopackage.ExportCommands.WRITE_FINISH) {
-        if (!(this.output instanceof ArrayBuffer)) {
-          this.output = Uint8Array.from(/** @type {!Array<!number>} */ (this.output)).buffer;
-        }
-
-        // remove it
-        var electron = plugin.geopackage.getElectron();
-        if (electron) {
-          electron.unlinkFile('tmp.gpkg', function(err) {
-            if (err) {
-              goog.log.error(plugin.geopackage.Exporter.LOGGER_, 'Could not delete tmp.gpkg!');
-            } else {
-              goog.log.info(plugin.geopackage.Exporter.LOGGER_, 'Removed tmp.gpkg');
-            }
-          });
-        }
-
-        this.dispatchEvent(os.events.EventType.COMPLETE);
       } else {
-        this.parseNext_();
+        this.reportError_(`GeoPackage creation failed! ${msg.reason}`);
       }
-    } else {
-      this.reportError_('GeoPackage creation failed! ' + msg.reason);
     }
   }
-};
 
-
-/**
- * @param {plugin.geopackage.ExportCommands} cmd
- * @protected
- */
-plugin.geopackage.Exporter.prototype.exportCommand = function(cmd) {
-  var worker = plugin.geopackage.getWorker();
-  worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-    id: this.lastId,
-    type: plugin.geopackage.MsgType.EXPORT,
-    command: cmd
-  }));
-};
-
-
-/**
- * @param {os.data.ColumnDefinition} colDef
- * @return {{field: string, type: string}}
- */
-plugin.geopackage.Exporter.mapColumnDefToColumn = function(colDef) {
-  return {
-    'field': colDef.field,
-    'type': colDef.type
-  };
-};
-
-
-/**
- * @private
- */
-plugin.geopackage.Exporter.prototype.parseNext_ = function() {
-  var worker = plugin.geopackage.getWorker();
-
-  if (this.index_ === this.items.length) {
-    this.exportCommand(plugin.geopackage.ExportCommands.WRITE);
-    return;
-  }
-
-  var feature = this.items[this.index_];
-  var source = this.getSource_(feature);
-  if (!source) {
-    this.reportError_('Could not determine source for ' + feature.getId());
-    return;
-  }
-
-  var id = source.getId();
-  var tableName;
-
-  if (id in this.idsToTables_) {
-    tableName = this.idsToTables_[id];
-  } else {
-    tableName = /** @type {!os.layer.ILayer} */ (os.MapContainer.getInstance().getLayer(id)).getTitle();
-    this.idsToTables_[id] = tableName;
-  }
-
-  if (!tableName) {
-    this.reportError_('Could not determine table name for ' + feature.getId());
-    return;
-  }
-
-  if (!(tableName in this.tables_)) {
+  /**
+   * @param {ExportCommands} cmd
+   * @protected
+   */
+  exportCommand(cmd) {
+    const worker = getWorker();
     worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
       id: this.lastId,
-      type: plugin.geopackage.MsgType.EXPORT,
-      command: plugin.geopackage.ExportCommands.CREATE_TABLE,
-      columns: source.getColumns().map(plugin.geopackage.Exporter.mapColumnDefToColumn),
-      tableName: tableName
+      type: MsgType.EXPORT,
+      command: cmd
     }));
-    return;
   }
 
-  var geojson = this.format.writeFeatureObject(feature, {
-    featureProjection: os.map.PROJECTION,
-    dataProjection: os.proj.EPSG4326,
-    fields: this.fields
-  });
+  /**
+   * @private
+   */
+  parseNext_() {
+    const worker = getWorker();
 
-  var props = geojson['properties'];
-
-  var itime = feature.get(os.data.RecordField.TIME);
-  if (itime) {
-    props[plugin.geopackage.Exporter.RECORD_TIME_START_FIELD] = new Date(itime.getStart()).toISOString();
-
-    if (itime instanceof os.time.TimeRange) {
-      props[plugin.geopackage.Exporter.RECORD_TIME_STOP_FIELD] = new Date(itime.getEnd()).toISOString();
+    if (this.index_ === this.items.length) {
+      this.exportCommand(ExportCommands.WRITE);
+      return;
     }
-  }
 
-  worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-    id: this.lastId,
-    type: plugin.geopackage.MsgType.EXPORT,
-    command: plugin.geopackage.ExportCommands.GEOJSON,
-    tableName: tableName,
-    data: geojson
-  }));
-};
-
-
-
-/**
- * @type {string}
- * @const
- */
-plugin.geopackage.Exporter.RECORD_TIME_START_FIELD = 'TIME_START';
-
-
-/**
- * @type {string}
- * @const
- */
-plugin.geopackage.Exporter.RECORD_TIME_STOP_FIELD = 'TIME_STOP';
-
-
-/**
- * @param {ol.Feature} feature The feature
- * @return {?os.source.Vector}
- * @private
- */
-plugin.geopackage.Exporter.prototype.getSource_ = function(feature) {
-  if (feature) {
-    var sourceId = feature.get(os.data.RecordField.SOURCE_ID);
-    if (typeof sourceId === 'string') {
-      return /** @type {os.source.Vector} */ (os.osDataManager.getSource(sourceId));
+    const feature = this.items[this.index_];
+    const source = this.getSource_(feature);
+    if (!source) {
+      this.reportError_(`Could not determine source for ${feature.getId()}`);
+      return;
     }
+
+    const id = source.getId();
+    let tableName;
+
+    if (id in this.idsToTables_) {
+      tableName = this.idsToTables_[id];
+    } else {
+      tableName = /** @type {!os.layer.ILayer} */ (os.MapContainer.getInstance().getLayer(id)).getTitle();
+      this.idsToTables_[id] = tableName;
+    }
+
+    if (!tableName) {
+      this.reportError_(`Could not determine table name for ${feature.getId()}`);
+      return;
+    }
+
+    if (!(tableName in this.tables_)) {
+      worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+        id: this.lastId,
+        type: MsgType.EXPORT,
+        command: ExportCommands.CREATE_TABLE,
+        columns: source.getColumns().map(Exporter.mapColumnDefToColumn),
+        tableName: tableName
+      }));
+      return;
+    }
+
+    const geojson = this.format.writeFeatureObject(feature, {
+      featureProjection: PROJECTION,
+      dataProjection: EPSG4326,
+      fields: this.fields
+    });
+
+    const props = geojson['properties'];
+
+    const itime = feature.get(RecordField.TIME);
+    if (itime) {
+      props[RECORD_TIME_START_FIELD] = new Date(itime.getStart()).toISOString();
+
+      if (itime instanceof os.time.TimeRange) {
+        props[RECORD_TIME_STOP_FIELD] = new Date(itime.getEnd()).toISOString();
+      }
+    }
+
+    worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+      id: this.lastId,
+      type: MsgType.EXPORT,
+      command: ExportCommands.GEOJSON,
+      tableName: tableName,
+      data: geojson
+    }));
   }
 
-  return null;
-};
+  /**
+   * @param {ol.Feature} feature The feature
+   * @return {?os.source.Vector}
+   * @private
+   */
+  getSource_(feature) {
+    if (feature) {
+      const sourceId = feature.get(RecordField.SOURCE_ID);
+      if (typeof sourceId === 'string') {
+        return /** @type {os.source.Vector} */ (os.osDataManager.getSource(sourceId));
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * @param {os.data.ColumnDefinition} colDef
+   * @return {{field: string, type: string}}
+   */
+  static mapColumnDefToColumn(colDef) {
+    return {
+      'field': colDef.field,
+      'type': colDef.type
+    };
+  }
+}
+
+
+exports = Exporter;

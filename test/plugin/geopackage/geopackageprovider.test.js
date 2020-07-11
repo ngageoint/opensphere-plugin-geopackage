@@ -2,13 +2,14 @@ goog.require('plugin.geopackage.GeoPackageProvider');
 
 
 describe('plugin.geopackage.GeoPackageProvider', function() {
-  plugin['geopackage']['ROOT'] = 'base/';
-  var baseUrl = '/base/test/resources/geopackage/';
+  const GeoPackageProvider = goog.module.get('plugin.geopackage.GeoPackageProvider');
+
+  const baseUrl = '/base/test/resources/geopackage/';
 
   it('should configure properly', function() {
-    var p = new plugin.geopackage.GeoPackageProvider();
+    const p = new GeoPackageProvider();
 
-    var conf = {
+    const conf = {
       type: 'geopackage',
       label: 'Test Label',
       url: '/path/to/something.gpkg'
@@ -21,11 +22,11 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
   });
 
   it('should parse geopackages properly', function() {
-    var p = new plugin.geopackage.GeoPackageProvider();
+    const p = new GeoPackageProvider();
     p.setUrl(baseUrl + 'gdal_sample_v1.2_no_extensions.gpkg');
 
-    var count = 0;
-    var listener = function(e) {
+    let count = 0;
+    const listener = function(e) {
       count++;
     };
 
@@ -40,10 +41,10 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
     }, 'GeoPackage to load', 5000);
 
     runs(function() {
-      var children = p.getChildren();
-      var prefix = p.getId() + os.ui.data.BaseProvider.ID_DELIMITER;
+      const children = p.getChildren();
+      const prefix = p.getId() + os.ui.data.BaseProvider.ID_DELIMITER;
 
-      var expected = [{
+      const expected = [{
         id: prefix + 'byte_jpeg',
         title: 'byte_jpeg',
         layerType: os.layer.LayerType.TILES,
@@ -147,7 +148,7 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
 
       expect(children.length).toBe(expected.length);
       for (var i = 0, n = children.length; i < n; i++) {
-        var config = children[i].getDescriptor().getBaseConfig();
+        const config = children[i].getDescriptor().getBaseConfig();
 
         expect(config.provider).toBe(p.getLabel());
         expect(config.delayUpdateActive).toBe(true);
@@ -160,8 +161,8 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
   });
 
   it('should log errors of all types', function() {
-    var p = new plugin.geopackage.GeoPackageProvider();
-    var fns = [
+    const p = new GeoPackageProvider();
+    const fns = [
       function() {
         p.logError(undefined);
       }, function() {
@@ -185,7 +186,7 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
   });
 
   it('should handle request errors', function() {
-    var p = new plugin.geopackage.GeoPackageProvider();
+    const p = new GeoPackageProvider();
     p.setUrl(baseUrl + 'doesnotexist.gpkg');
 
     runs(function() {
