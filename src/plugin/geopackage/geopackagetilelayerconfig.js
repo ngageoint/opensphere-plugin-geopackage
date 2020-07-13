@@ -45,6 +45,19 @@ class TileLayerConfig extends AbstractTileLayerConfig {
   /**
    * @inheritDoc
    */
+  initializeConfig(options) {
+    // If a zoomOffset isn't already defined, set it to 0 to avoid auto detection. Geopackages should not need to set
+    // this to anything other than 0.
+    if (options['zoomOffset'] == null) {
+      options['zoomOffset'] = 0;
+    }
+
+    super.initializeConfig(options);
+  }
+
+  /**
+   * @inheritDoc
+   */
   getSource(options) {
     const parts = options['id'].split(os.ui.data.BaseProvider.ID_DELIMITER);
 
