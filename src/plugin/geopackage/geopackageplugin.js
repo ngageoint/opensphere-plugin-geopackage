@@ -1,77 +1,82 @@
-goog.provide('plugin.geopackage.GeoPackagePlugin');
+goog.module('plugin.geopackage.GeoPackagePlugin');
 
-goog.require('os.data.DataManager');
-goog.require('os.data.DataProviderEventType');
-goog.require('os.data.ProviderEntry');
-goog.require('os.file.File');
-goog.require('os.file.FileStorage');
-goog.require('os.net.RequestHandlerFactory');
-goog.require('os.plugin.AbstractPlugin');
-goog.require('os.plugin.PluginManager');
-goog.require('os.ui.exportManager');
-goog.require('plugin.geopackage');
-goog.require('plugin.geopackage.Exporter');
-goog.require('plugin.geopackage.GeoPackageImportUI');
-goog.require('plugin.geopackage.GeoPackageProvider');
-goog.require('plugin.geopackage.RequestHandler');
-goog.require('plugin.geopackage.TileLayerConfig');
-goog.require('plugin.geopackage.VectorLayerConfig');
-goog.require('plugin.geopackage.mime');
+const DataManager = goog.require('os.data.DataManager');
+const DataProviderEventType = goog.require('os.data.DataProviderEventType');
+const ProviderEntry = goog.require('os.data.ProviderEntry');
+const {isLocal} = goog.require('os.file');
+const FileStorage = goog.require('os.file.FileStorage');
+const LayerConfigManager = goog.require('os.layer.config.LayerConfigManager');
+const RequestHandlerFactory = goog.require('os.net.RequestHandlerFactory');
+const AbstractPlugin = goog.require('os.plugin.AbstractPlugin');
+const PluginManager = goog.require('os.plugin.PluginManager');
+const ImportManager = goog.require('os.ui.im.ImportManager');
+const exportManager = goog.require('os.ui.exportManager');
+const geopackage = goog.require('plugin.geopackage');
+const Exporter = goog.require('plugin.geopackage.Exporter');
+const GeoPackageImportUI = goog.require('plugin.geopackage.GeoPackageImportUI');
+const GeoPackageProvider = goog.require('plugin.geopackage.GeoPackageProvider');
+const RequestHandler = goog.require('plugin.geopackage.RequestHandler');
+const TileLayerConfig = goog.require('plugin.geopackage.TileLayerConfig');
+const VectorLayerConfig = goog.require('plugin.geopackage.VectorLayerConfig');
+const mime = goog.require('plugin.geopackage.mime');
 
 
 /**
  * Provides support for GeoPackage vector files
- * @extends {os.plugin.AbstractPlugin}
- * @constructor
  */
-plugin.geopackage.GeoPackagePlugin = function() {
-  plugin.geopackage.GeoPackagePlugin.base(this, 'constructor');
-  this.id = plugin.geopackage.ID;
-  this.errorMessage = null;
-};
-goog.inherits(plugin.geopackage.GeoPackagePlugin, os.plugin.AbstractPlugin);
+class GeoPackagePlugin extends AbstractPlugin {
+  /**
+   * Constructor.
+   */
+  constructor() {
+    super();
+    this.id = geopackage.ID;
+    this.errorMessage = null;
+  }
 
+  /**
+   * @inheritDoc
+   */
+  init() {
+    // register geopackage provider type
+    const dm = DataManager.getInstance();
+    dm.registerProviderType(new ProviderEntry(
+        geopackage.ID,
+        GeoPackageProvider,
+        'GeoPackage File',
+        'Provides raster and vector data in a single file format'));
 
-/**
- * @inheritDoc
- */
-plugin.geopackage.GeoPackagePlugin.prototype.init = function() {
-  // register geopackage provider type
-  var dm = os.data.DataManager.getInstance();
-  dm.registerProviderType(new os.data.ProviderEntry(
-      plugin.geopackage.ID,
-      plugin.geopackage.GeoPackageProvider,
-      'GeoPackage File',
-      'Provides raster and vector data in a single file format'));
+    const lcm = LayerConfigManager.getInstance();
+    lcm.registerLayerConfig(geopackage.ID + '-tile', TileLayerConfig);
+    lcm.registerLayerConfig(geopackage.ID + '-vector', VectorLayerConfig);
 
-  var lcm = os.layer.config.LayerConfigManager.getInstance();
-  lcm.registerLayerConfig(plugin.geopackage.ID + '-tile', plugin.geopackage.TileLayerConfig);
-  lcm.registerLayerConfig(plugin.geopackage.ID + '-vector', plugin.geopackage.VectorLayerConfig);
+    RequestHandlerFactory.addHandler(RequestHandler);
 
-  os.net.RequestHandlerFactory.addHandler(plugin.geopackage.RequestHandler);
+    // register the GeoPackage exporter
+    exportManager.registerExportMethod(new Exporter());
 
-  // register the GeoPackage exporter
-  os.ui.exportManager.registerExportMethod(new plugin.geopackage.Exporter());
+    const im = ImportManager.getInstance();
+    im.registerImportDetails('GeoPackage', true);
+    im.registerImportUI(mime.TYPE, new GeoPackageImportUI);
 
-  var im = os.ui.im.ImportManager.getInstance();
-  im.registerImportDetails('GeoPackage', true);
-  im.registerImportUI(plugin.geopackage.mime.TYPE, new plugin.geopackage.GeoPackageImportUI);
+    os.dataManager.listen(DataProviderEventType.REMOVE_PROVIDER, this.onProviderRemove_, false, this);
+  }
 
-  os.dataManager.listen(os.data.DataProviderEventType.REMOVE_PROVIDER, this.onProviderRemove_, false, this);
-};
-
-
-/**
- * @param {os.data.DataProviderEvent} evt
- */
-plugin.geopackage.GeoPackagePlugin.prototype.onProviderRemove_ = function(evt) {
-  if (evt.dataProvider instanceof plugin.geopackage.GeoPackageProvider && os.file.isLocal(evt.dataProvider.getUrl())) {
-    var fs = os.file.FileStorage.getInstance();
-    if (fs.fileExists(evt.dataProvider.getUrl())) {
-      fs.deleteFile(evt.dataProvider.getUrl());
+  /**
+   * @param {os.data.DataProviderEvent} evt
+   * @private
+   */
+  onProviderRemove_(evt) {
+    if (evt.dataProvider instanceof GeoPackageProvider && isLocal(evt.dataProvider.getUrl())) {
+      const fs = FileStorage.getInstance();
+      if (fs.fileExists(evt.dataProvider.getUrl())) {
+        fs.deleteFile(evt.dataProvider.getUrl());
+      }
     }
   }
-};
+}
 
 // add the plugin to the application
-os.plugin.PluginManager.getInstance().addPlugin(new plugin.geopackage.GeoPackagePlugin());
+PluginManager.getInstance().addPlugin(new GeoPackagePlugin());
+
+exports = GeoPackagePlugin;
