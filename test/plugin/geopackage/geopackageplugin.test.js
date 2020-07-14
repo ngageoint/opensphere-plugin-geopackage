@@ -3,13 +3,15 @@ goog.require('os.mock');
 goog.require('plugin.geopackage.GeoPackagePlugin');
 
 describe('plugin.geopackage.GeoPackagePlugin', function() {
+  const GeoPackagePlugin = goog.module.get('plugin.geopackage.GeoPackagePlugin');
+
   it('should have the proper ID', function() {
-    expect(new plugin.geopackage.GeoPackagePlugin().id).toBe('geopackage');
+    expect(new GeoPackagePlugin().id).toBe('geopackage');
   });
 
   it('should not throw an error', function() {
-    var fn = function() {
-      var p = new plugin.geopackage.GeoPackagePlugin();
+    const fn = function() {
+      const p = new GeoPackagePlugin();
       p.init();
     };
 

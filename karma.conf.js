@@ -21,12 +21,17 @@ module.exports = function(config) {
   const gpkg = resolver.resolveModulePath('@ngageoint/geopackage/dist/geopackage.min.js', __dirname);
   const gpkgDefinePath = path.join(__dirname, '.build', 'gpkg-define.js');
   const gpkgManifestPath = path.join(__dirname, '.build', 'gcc-test-manifest-gpkg');
-  fs.writeFileSync(gpkgDefinePath, 'plugin.geopackage.GPKG_PATH = "/absolute' + gpkg + '"');
+  const gpkgDefineSrc = `
+    var CLOSURE_UNCOMPILED_DEFINES = {
+      'plugin.geopackage.GPKG_PATH': '/absolute${gpkg}',
+      'plugin.geopackage.ROOT': 'base/'
+    }`.trim();
+  fs.writeFileSync(gpkgDefinePath, gpkgDefineSrc);
 
   // add the file to the test manifest
   const testManifest = fs.readFileSync('.build/gcc-test-manifest', 'utf8').trim();
   if (testManifest.indexOf(gpkgDefinePath) === -1) {
-    fs.writeFileSync(gpkgManifestPath, `${testManifest}\n${gpkgDefinePath}`);
+    fs.writeFileSync(gpkgManifestPath, `${gpkgDefinePath}\n${testManifest}`);
   }
 
   config.set({

@@ -1,141 +1,30 @@
-goog.provide('plugin.geopackage.GeoPackageProvider');
+goog.module('plugin.geopackage.GeoPackageProvider');
 
-goog.require('goog.log');
-goog.require('goog.log.Logger');
-goog.require('goog.string');
-goog.require('os.data.ConfigDescriptor');
-goog.require('os.net.Request');
-goog.require('os.ui.Icons');
-goog.require('os.ui.data.DescriptorNode');
-goog.require('os.ui.server.AbstractLoadingServer');
-goog.require('plugin.geopackage');
+const GoogEventType = goog.require('goog.events.EventType');
+const log = goog.require('goog.log');
+const NetEventType = goog.require('goog.net.EventType');
+const ResponseType = goog.require('goog.net.XhrIo.ResponseType');
+const {makeSafe, intAwareCompare} = goog.require('goog.string');
+const AlertManager = goog.require('os.alert.AlertManager');
+const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
+const ConfigDescriptor = goog.require('os.data.ConfigDescriptor');
+const {isFileSystem} = goog.require('os.file');
+const LayerType = goog.require('os.layer.LayerType');
+const Request = goog.require('os.net.Request');
+const Icons = goog.require('os.ui.Icons');
+const BaseProvider = goog.require('os.ui.data.BaseProvider');
+const DescriptorNode = goog.require('os.ui.data.DescriptorNode');
+const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer');
+const {getWorker, isElectron, MsgType, ID} = goog.require('plugin.geopackage');
 
-
-/**
- * GeoPackage provider
- * @extends {os.ui.server.AbstractLoadingServer}
- * @constructor
- */
-plugin.geopackage.GeoPackageProvider = function() {
-  plugin.geopackage.GeoPackageProvider.base(this, 'constructor');
-  this.log = plugin.geopackage.GeoPackageProvider.LOGGER_;
-
-  /**
-   * @private
-   */
-  this.workerHandler_ = this.onWorkerMessage_.bind(this);
-
-  var w = plugin.geopackage.getWorker();
-  w.addEventListener(goog.events.EventType.MESSAGE, this.workerHandler_);
-};
-goog.inherits(plugin.geopackage.GeoPackageProvider, os.ui.server.AbstractLoadingServer);
-goog.addSingletonGetter(plugin.geopackage.GeoPackageProvider);
+const GoogEvent = goog.requireType('goog.events.Event');
 
 
 /**
  * The logger.
- * @const
- * @type {goog.debug.Logger}
- * @private
+ * @type {log.Logger}
  */
-plugin.geopackage.GeoPackageProvider.LOGGER_ = goog.log.getLogger('plugin.geopackage.GeoPackageProvider');
-
-
-/**
- * @inheritDoc
- */
-plugin.geopackage.GeoPackageProvider.prototype.disposeInternal = function() {
-  // close any previously-opened versions
-  var worker = plugin.geopackage.getWorker();
-  worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-    id: this.getId(),
-    type: plugin.geopackage.MsgType.CLOSE
-  }));
-
-  worker.removeEventListener(goog.events.EventType.MESSAGE, this.workerHandler_);
-  plugin.geopackage.GeoPackageProvider.base(this, 'disposeInternal');
-};
-
-
-/**
- * @inheritDoc
- */
-plugin.geopackage.GeoPackageProvider.prototype.configure = function(config) {
-  plugin.geopackage.GeoPackageProvider.base(this, 'configure', config);
-  this.setUrl(/** @type {string} */ (config['url']));
-};
-
-
-/**
- * @inheritDoc
- */
-plugin.geopackage.GeoPackageProvider.prototype.load = function(opt_ping) {
-  plugin.geopackage.GeoPackageProvider.base(this, 'load', opt_ping);
-  this.setLoading(true);
-
-  var url = this.getUrl();
-
-  if (plugin.geopackage.isElectron() && os.file.isFileSystem(url)) {
-    var worker = plugin.geopackage.getWorker();
-
-    // close any previously-opened versions
-    worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-      id: this.getId(),
-      type: plugin.geopackage.MsgType.CLOSE
-    }));
-
-    // open the DB
-    worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-      id: this.getId(),
-      type: plugin.geopackage.MsgType.OPEN,
-      url: url
-    }));
-  } else {
-    var request = new os.net.Request(this.getUrl());
-    request.setHeader('Accept', '*/*');
-    request.listen(goog.net.EventType.SUCCESS, this.onUrl_, false, this);
-    request.listen(goog.net.EventType.ERROR, this.onUrlError_, false, this);
-    request.setResponseType(goog.net.XhrIo.ResponseType.ARRAY_BUFFER);
-    request.load();
-  }
-};
-
-/**
- * @param {Event|GeoPackageWorkerMessage} e
- */
-plugin.geopackage.GeoPackageProvider.prototype.onWorkerMessage_ = function(e) {
-  var msg = /** @type {GeoPackageWorkerResponse} */ (e instanceof Event ? e.data : e);
-  var worker = plugin.geopackage.getWorker();
-
-  if (msg.message.id === this.getId()) {
-    if (msg.type === plugin.geopackage.MsgType.SUCCESS) {
-      if (msg.message.type === plugin.geopackage.MsgType.OPEN) {
-        worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-          id: this.getId(),
-          type: plugin.geopackage.MsgType.LIST_DESCRIPTORS
-        }));
-      } else if (msg.message.type === plugin.geopackage.MsgType.LIST_DESCRIPTORS) {
-        var configs = /** @type {Array<Object<string, *>>} */ (msg.data);
-        configs.forEach(this.addDescriptor_, this);
-        this.finish();
-      }
-    } else {
-      this.logError(msg.message.id + ' ' + msg.message.type + ' failed! ' + msg.reason);
-    }
-  }
-};
-
-/**
- * @inheritDoc
- */
-plugin.geopackage.GeoPackageProvider.prototype.finish = function() {
-  var children = this.getChildren();
-  if (children) {
-    children.sort(plugin.geopackage.GeoPackageProvider.sort_);
-  }
-
-  plugin.geopackage.GeoPackageProvider.base(this, 'finish');
-};
+const LOGGER = log.getLogger('plugin.geopackage.GeoPackageProvider');
 
 
 /**
@@ -143,121 +32,231 @@ plugin.geopackage.GeoPackageProvider.prototype.finish = function() {
  * @param {os.structs.ITreeNode} b The second node
  * @return {number} per typical compare functions
  */
-plugin.geopackage.GeoPackageProvider.sort_ = function(a, b) {
-  return goog.string.intAwareCompare(a.getLabel() || '', b.getLabel() || '');
-};
+const labelSort = (a, b) => intAwareCompare(a.getLabel() || '', b.getLabel() || '');
 
 
 /**
- * @param {goog.events.Event} event The event
- * @private
+ * GeoPackage provider
  */
-plugin.geopackage.GeoPackageProvider.prototype.onUrl_ = function(event) {
-  var req = /** @type {os.net.Request} */ (event.target);
-  var response = req.getResponse();
-  goog.dispose(req);
+class GeoPackageProvider extends AbstractLoadingServer {
+  /**
+   * Constructor.
+   */
+  constructor() {
+    super();
+    this.log = LOGGER;
 
-  if (response instanceof ArrayBuffer) {
-    var worker = plugin.geopackage.getWorker();
+    /**
+     * @private
+     */
+    this.workerHandler_ = this.onWorkerMessage_.bind(this);
 
+    const w = getWorker();
+    w.addEventListener(GoogEventType.MESSAGE, this.workerHandler_);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  disposeInternal() {
     // close any previously-opened versions
+    const worker = getWorker();
     worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
       id: this.getId(),
-      type: plugin.geopackage.MsgType.CLOSE
+      type: MsgType.CLOSE
     }));
 
-    // open the DB
-    worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-      id: this.getId(),
-      type: plugin.geopackage.MsgType.OPEN,
-      data: response
-    }), [response]);
-  }
-};
-
-
-/**
- * @param {goog.events.Event} event The event
- * @private
- */
-plugin.geopackage.GeoPackageProvider.prototype.onUrlError_ = function(event) {
-  var req = /** @type {os.net.Request} */ (event.target);
-  var errors = req.getErrors();
-  var uri = req.getUri();
-  goog.dispose(req);
-
-  var href = uri.toString();
-  var msg = 'Request failed for <a target="_blank" href="' + href + '">GeoPackage</a> ';
-
-  if (errors) {
-    msg += errors.join(' ');
+    worker.removeEventListener(GoogEventType.MESSAGE, this.workerHandler_);
+    super.disposeInternal();
   }
 
-  this.logError(msg);
-};
+  /**
+   * @inheritDoc
+   */
+  configure(config) {
+    super.configure(config);
+    this.setUrl(/** @type {string} */ (config['url']));
+  }
 
+  /**
+   * @inheritDoc
+   */
+  load(opt_ping) {
+    super.load(opt_ping);
+    this.setLoading(true);
 
-/**
- * @param {*} msg The error message.
- * @protected
- */
-plugin.geopackage.GeoPackageProvider.prototype.logError = function(msg) {
-  msg = goog.string.makeSafe(msg);
+    const url = this.getUrl();
 
-  if (!this.getError()) {
-    var errorMsg = 'Server [' + this.getLabel() + ']: ' + msg;
+    if (isElectron() && isFileSystem(url)) {
+      const worker = getWorker();
 
-    if (!this.getPing()) {
-      os.alert.AlertManager.getInstance().sendAlert(errorMsg, os.alert.AlertEventSeverity.ERROR);
+      // close any previously-opened versions
+      worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+        id: this.getId(),
+        type: MsgType.CLOSE
+      }));
+
+      // open the DB
+      worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+        id: this.getId(),
+        type: MsgType.OPEN,
+        url: url
+      }));
+    } else {
+      const request = new Request(this.getUrl());
+      request.setHeader('Accept', '*/*');
+      request.listen(NetEventType.SUCCESS, this.onUrl_, false, this);
+      request.listen(NetEventType.ERROR, this.onUrlError_, false, this);
+      request.setResponseType(ResponseType.ARRAY_BUFFER);
+      request.load();
+    }
+  }
+
+  /**
+   * @param {Event|GeoPackageWorkerMessage} e
+   */
+  onWorkerMessage_(e) {
+    const msg = /** @type {GeoPackageWorkerResponse} */ (e instanceof Event ? e.data : e);
+    const worker = getWorker();
+
+    if (msg.message.id === this.getId()) {
+      if (msg.type === MsgType.SUCCESS) {
+        if (msg.message.type === MsgType.OPEN) {
+          worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+            id: this.getId(),
+            type: MsgType.LIST_DESCRIPTORS
+          }));
+        } else if (msg.message.type === MsgType.LIST_DESCRIPTORS) {
+          const configs = /** @type {Array<Object<string, *>>} */ (msg.data);
+          configs.forEach(this.addDescriptor_, this);
+          this.finish();
+        }
+      } else {
+        this.logError(msg.message.id + ' ' + msg.message.type + ' failed! ' + msg.reason);
+      }
+    }
+  }
+
+  /**
+   * @inheritDoc
+   */
+  finish() {
+    const children = this.getChildren();
+    if (children) {
+      children.sort(labelSort);
     }
 
-    goog.log.error(this.log, errorMsg);
-
-    this.setErrorMessage(errorMsg);
-    this.setLoading(false);
-  }
-};
-
-
-/**
- * @param {Object<string, *>} config The layer config
- * @private
- */
-plugin.geopackage.GeoPackageProvider.prototype.addDescriptor_ = function(config) {
-  var id = this.getId() + os.ui.data.BaseProvider.ID_DELIMITER + config['tableName'];
-  config['id'] = id;
-  config['delayUpdateActive'] = true;
-  config['provider'] = this.getLabel();
-
-  if (config['type'] === plugin.geopackage.ID + '-tile') {
-    config['layerType'] = os.layer.LayerType.TILES;
-    config['icons'] = os.ui.Icons.TILES;
-    config['minZoom'] = Math.max(config['minZoom'], 0);
-    config['maxZoom'] = Math.min(config['maxZoom'], 42);
-  } else if (config['type'] === plugin.geopackage.ID + '-vector') {
-    var animate = config['dbColumns'].some(function(col) {
-      return col['type'] === 'datetime';
-    });
-
-    config['layerType'] = os.layer.LayerType.FEATURES;
-    config['icons'] = os.ui.Icons.FEATURES + (animate ? os.ui.Icons.TIME : '');
-    config['url'] = 'gpkg://' + this.getId() + '/' + config['title'];
-    config['animate'] = animate;
+    super.finish();
   }
 
-  if (id) {
-    var descriptor = /** @type {os.data.ConfigDescriptor} */ (os.dataManager.getDescriptor(id));
-    if (!descriptor) {
-      descriptor = new os.data.ConfigDescriptor();
+  /**
+   * @param {GoogEvent} event The event
+   * @private
+   */
+  onUrl_(event) {
+    const req = /** @type {Request} */ (event.target);
+    const response = req.getResponse();
+    goog.dispose(req);
+
+    if (response instanceof ArrayBuffer) {
+      const worker = getWorker();
+
+      // close any previously-opened versions
+      worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+        id: this.getId(),
+        type: MsgType.CLOSE
+      }));
+
+      // open the DB
+      worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+        id: this.getId(),
+        type: MsgType.OPEN,
+        data: response
+      }), [response]);
+    }
+  }
+
+  /**
+   * @param {GoogEvent} event The event
+   * @private
+   */
+  onUrlError_(event) {
+    const req = /** @type {Request} */ (event.target);
+    const errors = req.getErrors();
+    const uri = req.getUri();
+    goog.dispose(req);
+
+    const href = uri.toString();
+    let msg = 'Request failed for <a target="_blank" href="' + href + '">GeoPackage</a> ';
+
+    if (errors) {
+      msg += errors.join(' ');
     }
 
-    descriptor.setBaseConfig(config);
-    os.dataManager.addDescriptor(descriptor);
-    descriptor.updateActiveFromTemp();
-
-    var node = new os.ui.data.DescriptorNode();
-    node.setDescriptor(descriptor);
-
-    this.addChild(node);
+    this.logError(msg);
   }
-};
+
+  /**
+   * @param {*} msg The error message.
+   * @protected
+   */
+  logError(msg) {
+    msg = makeSafe(msg);
+
+    if (!this.getError()) {
+      const errorMsg = 'Server [' + this.getLabel() + ']: ' + msg;
+
+      if (!this.getPing()) {
+        AlertManager.getInstance().sendAlert(errorMsg, AlertEventSeverity.ERROR);
+      }
+
+      log.error(this.log, errorMsg);
+
+      this.setErrorMessage(errorMsg);
+      this.setLoading(false);
+    }
+  }
+
+  /**
+   * @param {Object<string, *>} config The layer config
+   * @private
+   */
+  addDescriptor_(config) {
+    const id = this.getId() + BaseProvider.ID_DELIMITER + config['tableName'];
+    config['id'] = id;
+    config['delayUpdateActive'] = true;
+    config['provider'] = this.getLabel();
+
+    if (config['type'] === ID + '-tile') {
+      config['layerType'] = LayerType.TILES;
+      config['icons'] = Icons.TILES;
+      config['minZoom'] = Math.max(config['minZoom'], 0);
+      config['maxZoom'] = Math.min(config['maxZoom'], 42);
+    } else if (config['type'] === ID + '-vector') {
+      const animate = config['dbColumns'].some((col) => col['type'] === 'datetime');
+
+      config['layerType'] = LayerType.FEATURES;
+      config['icons'] = Icons.FEATURES + (animate ? Icons.TIME : '');
+      config['url'] = 'gpkg://' + this.getId() + '/' + config['title'];
+      config['animate'] = animate;
+    }
+
+    if (id) {
+      let descriptor = /** @type {ConfigDescriptor} */ (os.dataManager.getDescriptor(id));
+      if (!descriptor) {
+        descriptor = new ConfigDescriptor();
+      }
+
+      descriptor.setBaseConfig(config);
+      os.dataManager.addDescriptor(descriptor);
+      descriptor.updateActiveFromTemp();
+
+      const node = new DescriptorNode();
+      node.setDescriptor(descriptor);
+
+      this.addChild(node);
+    }
+  }
+}
+
+exports = GeoPackageProvider;

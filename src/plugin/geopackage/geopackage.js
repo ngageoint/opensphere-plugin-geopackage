@@ -1,38 +1,37 @@
-goog.provide('plugin.geopackage');
+goog.module('plugin.geopackage');
 
-goog.require('goog.log');
+const log = goog.require('goog.log');
 
-
-/**
- * @define {string}
- */
-plugin.geopackage.ROOT = goog.define('plugin.geopackage.ROOT', '../opensphere-plugin-geopackage/');
 
 /**
  * @define {string}
  */
-plugin.geopackage.GPKG_PATH = goog.define('plugin.geopackage.GPKG_PATH', 'vendor/geopackage/geopackage.min.js');
+exports.ROOT = goog.define('plugin.geopackage.ROOT', '../opensphere-plugin-geopackage/');
+
+/**
+ * @define {string}
+ */
+exports.GPKG_PATH = goog.define('plugin.geopackage.GPKG_PATH', 'vendor/geopackage/geopackage.min.js');
 
 /**
  * @type {string}
  * @const
  */
-plugin.geopackage.ID = 'geopackage';
+exports.ID = 'geopackage';
 
 
 /**
  * The logger.
  * @const
  * @type {goog.debug.Logger}
- * @private
  */
-plugin.geopackage.LOGGER = goog.log.getLogger('plugin.geopackage');
+const LOGGER = log.getLogger('plugin.geopackage');
 
 
 /**
  * @enum {string}
  */
-plugin.geopackage.MsgType = {
+exports.MsgType = {
   OPEN_LIBRARY: 'openLibrary',
   OPEN: 'open',
   CLOSE: 'close',
@@ -47,7 +46,7 @@ plugin.geopackage.MsgType = {
 /**
  * @enum {string}
  */
-plugin.geopackage.ExportCommands = {
+exports.ExportCommands = {
   CREATE: 'create',
   CREATE_TABLE: 'createTable',
   GEOJSON: 'geojson',
@@ -59,16 +58,15 @@ plugin.geopackage.ExportCommands = {
 
 /**
  * @type {?Worker}
- * @private
  */
-plugin.geopackage.worker_ = null;
+let worker_ = null;
 
 
 /**
  * Get the Electron preload exports.
  * @return {Object|undefined}
  */
-plugin.geopackage.getElectron = function() {
+exports.getElectron = () => {
   return window.ElectronGpkg || undefined;
 };
 
@@ -77,19 +75,19 @@ plugin.geopackage.getElectron = function() {
  * If the app is running within Electron.
  * @return {boolean}
  */
-plugin.geopackage.isElectron = function() {
-  return !!plugin.geopackage.getElectron();
+exports.isElectron = () => {
+  return !!exports.getElectron();
 };
 
 
 /**
  * @return {!Worker} The GeoPackage worker
  */
-plugin.geopackage.getWorker = function() {
-  if (!plugin.geopackage.worker_) {
-    var src = plugin.geopackage.ROOT + 'src/worker/gpkg.worker.js';
+exports.getWorker = () => {
+  if (!worker_) {
+    let src = exports.ROOT + 'src/worker/gpkg.worker.js';
 
-    var electron = plugin.geopackage.getElectron();
+    const electron = exports.getElectron();
     if (electron) {
       // The node context (as opposed to the electron browser context), loads
       // paths relative to process.cwd(). Therefore, we need to make our source
@@ -108,7 +106,7 @@ plugin.geopackage.getWorker = function() {
       // than node bindings.
       //
       // see associated hack in gpkg.worker.js
-      var options = electron.getElectronEnvOptions();
+      const options = electron.getElectronEnvOptions();
 
       // to debug this guy:
       //  - open chrome://inspect/#devices
@@ -120,18 +118,18 @@ plugin.geopackage.getWorker = function() {
       // DEBUG VERSION! Do not commit next line uncommented
       // options['execArgv'] = ['--inspect-brk'];
 
-      plugin.geopackage.worker_ = /** @type {!Worker} */ (electron.forkProcess(src, [], options));
+      worker_ = (electron.forkProcess(src, [], options));
 
-      goog.log.info(plugin.geopackage.LOGGER, 'GeoPackage worker configured via node child process');
+      log.info(LOGGER, 'GeoPackage worker configured via node child process');
     } else {
-      plugin.geopackage.worker_ = new Worker(src);
-      plugin.geopackage.worker_.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-        type: plugin.geopackage.MsgType.OPEN_LIBRARY,
-        url: (!plugin.geopackage.GPKG_PATH.startsWith('/') ? '../../' : '') + plugin.geopackage.GPKG_PATH
+      worker_ = new Worker(src);
+      worker_.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+        type: exports.MsgType.OPEN_LIBRARY,
+        url: (!exports.GPKG_PATH.startsWith('/') ? '../../' : '') + exports.GPKG_PATH
       }));
-      goog.log.info(plugin.geopackage.LOGGER, 'GeoPackage worker configured via web worker');
+      log.info(LOGGER, 'GeoPackage worker configured via web worker');
     }
   }
 
-  return plugin.geopackage.worker_;
+  return worker_;
 };
