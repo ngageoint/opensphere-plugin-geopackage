@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.0.0...v1.0.1) (2020-07-16)
+
+
+### Bug Fixes
+
+* **deps:** roll back semantic-release versions to support older node ([2c7aa8f](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/2c7aa8f5ab6734cf9c9bfc8886d786c18372242e))
+
 # 1.0.0 (2020-07-16)
 
 
