@@ -4,6 +4,8 @@ cache:
   directories:
   - node_modules
   - ~/.cache
+git:
+  clone: false
 notifications:
   email: false
 node_js:
