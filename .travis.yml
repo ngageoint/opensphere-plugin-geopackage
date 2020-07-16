@@ -26,7 +26,6 @@ install:
 # Checkout the correct branch for opensphere-plugin-geopackage (PR or current for push builds)
 - cd opensphere-plugin-geopackage
 - git checkout ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
-- cd ..
 # Yarn install
 - yarn config list
 - yarn
