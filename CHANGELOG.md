@@ -1,3 +1,17 @@
+# [1.1.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.0.0...v1.1.0) (2020-07-16)
+
+
+### Bug Fixes
+
+* **ci:** update docs to trigger build ([db7987d](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/db7987dad9f421a913561e057e0605c87748011e))
+* **deps:** roll back semantic-release versions to support older node ([69819ae](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/69819aebe1fabdbf3bef39ed17f4845c58e9c3d6))
+* **deps:** roll back semantic-release versions to support older node ([2c7aa8f](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/2c7aa8f5ab6734cf9c9bfc8886d786c18372242e))
+
+
+### Features
+
+* **deps:** no-op change to trigger release ([6451927](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/6451927359c72832ec44d7202a9243a57f3267d1))
+
 ## [1.0.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.0.0...v1.0.1) (2020-07-16)
 
 
