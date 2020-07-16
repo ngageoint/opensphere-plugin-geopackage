@@ -31,8 +31,11 @@ install:
 - yarn
 script:
 - cd opensphere-plugin-geopackage
+- commitlint-travis
 - yarn lint
 - yarn test
+after_success:
+- npm run semantic-release
 branches:
   except:
   - /^v\d+\.\d+\.\d+$/
