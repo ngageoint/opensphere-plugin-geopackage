@@ -103,7 +103,7 @@
     "opensphere-build-resolver": "^7.1.0",
     "rimraf": "^2.5.4",
     "sass-lint": "^1.12.1",
-    "semantic-release": "^17.1.1"
+    "semantic-release": "^15.13.3"
   },
   "dependencies": {
     "@ngageoint/geopackage": "^2.0.0",
