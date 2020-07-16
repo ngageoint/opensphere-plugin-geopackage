@@ -25,7 +25,7 @@ install:
 - cd opensphere-yarn-workspace/workspace
 - git clone --depth 1 https://github.com/ngageoint/opensphere.git
 # Clones the PR branch for pull requests, current branch for push builds
-- git clone --single-branch --branch ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} https://github.com/${TRAVIS_REPO_SLUG}.git
+- git clone --single-branch --branch ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH} https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}.git
 # Install dependencies
 - yarn config list
 - yarn
