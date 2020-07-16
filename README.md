@@ -25,7 +25,7 @@ Run `yarn` to install dependencies.
 
 ## Caveats
 
-Building the web version of OpenSphere still limits the file size to 100MB. The Electron version supports
+Building the web version of OpenSphere still limits the file size to 100MB. The [Electron](https://github.com/ngageoint/opensphere-electron) version supports
 large GeoPackage files.
 
 ## Tips
