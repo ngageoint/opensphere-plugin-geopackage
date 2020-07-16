@@ -6,7 +6,7 @@ describe('plugin.geopackage.GeoPackagePlugin', function() {
   const GeoPackagePlugin = goog.module.get('plugin.geopackage.GeoPackagePlugin');
 
   it('should have the proper ID', function() {
-    expect(new GeoPackagePlugin().id).toBe('geopackage');
+    expect(new GeoPackagePlugin().id).toBe('not-geopackage');
   });
 
   it('should not throw an error', function() {
