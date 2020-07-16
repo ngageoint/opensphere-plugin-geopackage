@@ -1,0 +1,38 @@
+language: node_js
+cache:
+  yarn: true
+  directories:
+  - node_modules
+  - ~/.cache
+notifications:
+  email: false
+node_js:
+- stable
+os:
+- linux
+addons:
+  apt:
+    sources:
+    - sourceline: "deb https://dl.yarnpkg.com/debian/ stable main"
+      key_url: "https://dl.yarnpkg.com/debian/pubkey.gpg"
+    packages:
+    - yarn
+install:
+# Clone opensphere-yarn-workspace with opensphere/opensphere-plugin-geopackage in the workspace directory
+- git clone --depth 1 https://github.com/ngageoint/opensphere-yarn-workspace.git
+- cd opensphere-yarn-workspace/workspace
+- git clone --depth 1 https://github.com/ngageoint/opensphere.git
+- git clone https://github.com/${TRAVIS_REPO_SLUG}.git
+# Checkout the correct branch for opensphere-plugin-geopackage (PR or current for push builds)
+- cd opensphere-plugin-geopackage
+- git checkout ${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+- cd ..
+# Yarn install
+- yarn config list
+- yarn
+script:
+- yarn lint
+- yarn test
+branches:
+  except:
+  - /^v\d+\.\d+\.\d+$/
