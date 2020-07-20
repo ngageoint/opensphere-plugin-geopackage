@@ -15,7 +15,8 @@
     "index": "index.js",
     "electron": {
       "packages": [
-        "@ngageoint/geopackage"
+        "@ngageoint/geopackage",
+        "nan"
       ],
       "preload": [
         "./src/electron/preload.js"
@@ -107,6 +108,7 @@
   },
   "dependencies": {
     "@ngageoint/geopackage": "^2.0.0",
+    "nan": "2.14.0",
     "opensphere": "0.0.0-development"
   },
   "husky": {
