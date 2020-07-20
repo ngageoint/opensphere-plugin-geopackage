@@ -1,7 +1,7 @@
 {
   "name": "opensphere-plugin-geopackage",
-  "version": "1.0.0",
-  "description": "An OpenSphere plugin for geopackage",
+  "version": "1.1.0",
+  "description": "Adds GeoPackage support to OpenSphere",
   "main": "index.js",
   "directories": {
     "src": "src",
@@ -43,7 +43,8 @@
     "lint": "npm run lint:js && npm run lint:css",
     "compile:resolve": "os-resolve --outputDir .build --exclude resources",
     "build": "echo 'Please run the build script in the opensphere project' && exit 1",
-    "package:update": "if git diff --name-only ORIG_HEAD HEAD | grep --quiet package.json; then echo 'UPDATE: package.json updated, consider running yarn in the workspace root'; fi"
+    "package:update": "if git diff --name-only ORIG_HEAD HEAD | grep --quiet package.json; then echo 'UPDATE: package.json updated, consider running yarn in the workspace root'; fi",
+    "semantic-release": "semantic-release"
   },
   "keywords": [
     "opensphere",
@@ -56,11 +57,36 @@
     "William Wall <wwall@caci.com>"
   ],
   "license": "Apache-2.0",
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "CHANGELOG.md"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ],
+      "@semantic-release/github"
+    ]
+  },
   "devDependencies": {
     "angular-mocks": "~1.5.x",
     "@commitlint/cli": "^8.0.0",
     "@commitlint/config-conventional": "^8.1.0",
     "@commitlint/travis-cli": "^8.1.0",
+    "@semantic-release/changelog": "^3.0.2",
+    "@semantic-release/commit-analyzer": "^6.1.0",
+    "@semantic-release/git": "^7.0.8",
+    "@semantic-release/github": "^5.2.10",
+    "@semantic-release/npm": "^5.1.4",
+    "@semantic-release/release-notes-generator": "^7.1.4",
     "eslint": "^6.0.0",
     "eslint-config-opensphere": "^4.0.0",
     "husky": "^3.0.2",
@@ -76,7 +102,8 @@
     "opensphere-build-closure-helper": "^5.0.0",
     "opensphere-build-resolver": "^7.1.0",
     "rimraf": "^2.5.4",
-    "sass-lint": "^1.12.1"
+    "sass-lint": "^1.12.1",
+    "semantic-release": "^15.13.32"
   },
   "dependencies": {
     "@ngageoint/geopackage": "^2.0.0",
