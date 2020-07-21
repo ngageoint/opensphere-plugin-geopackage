@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.0...v1.1.1) (2020-07-20)
+
+
+### Bug Fixes
+
+* **electron:** fix native build of canvas by electron-builder ([d0864f8](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/d0864f842ff5ff0894bedfaf96552eb9d602720b))
+
 # [1.1.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.0.0...v1.1.0) (2020-07-16)
 
 
