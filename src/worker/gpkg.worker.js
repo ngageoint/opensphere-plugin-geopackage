@@ -285,8 +285,8 @@ var listDescriptors = function(msg) {
             type: 'geopackage-tile',
             title: info.tableName,
             tableName: info.tableName,
-            minZoom: Math.round(info.minZoom),
-            maxZoom: Math.round(info.maxZoom),
+            gpkgMinZoom: Math.round(info.minZoom),
+            gpkgMaxZoom: Math.round(info.maxZoom),
             resolutions: fixResolutions(tileMatrices.map(getTileMatrixToResolutionMapper(info))),
             tileSizes: fixSizes(tileMatrices.map(tileMatrixToTileSize))
           };
@@ -363,33 +363,54 @@ var getTile = function(msg) {
     return;
   }
 
-  if (!msg.tileCoord) {
-    handleError('tileCoord property must be set', msg);
+  if (msg.zoom == null) {
+    handleError('zoom property must be set', msg);
     return;
   }
 
-  if (msg.tileCoord.length !== 3) {
-    handleError('tileCoord [z, x, y] must have a length of exactly 3', msg);
+  if (!msg.projection) {
+    handleError('projection property must be set', msg);
+    return;
+  }
+
+  if (!msg.width) {
+    handleError('width property must be set', msg);
+    return;
+  }
+
+  if (!msg.height) {
+    handleError('height property must be set', msg);
+    return;
+  }
+
+  if (!msg.extent) {
+    handleError('extent (ol.Extent in EPSG:4326) property must be set', msg);
     return;
   }
 
   try {
     var tileDao = gpkg.getTileDao(msg.tableName);
-    var tile = tileDao.queryForTile(msg.tileCoord[1], -msg.tileCoord[2] - 1, msg.tileCoord[0]);
+    var bbox = new geopackage.BoundingBox(msg.extent[0], msg.extent[2], msg.extent[1], msg.extent[3]);
+    var ret = new geopackage.GeoPackageTileRetriever(tileDao, msg.width, msg.height);
+    ret.getTileWithWgs84BoundsInProjection(bbox, msg.zoom, msg.projection)
+        .then(function(tile) {
+          if (!tile) {
+            success(msg);
+            return;
+          }
 
-    if (!tile) {
-      success(msg);
-      return;
-    }
+          var array = tile instanceof Buffer ? tile : tile.getTileData();
 
-    var array = tile.getTileData();
-
-    if (isNode) {
-      success(msg, Array.from(new Int32Array(array)));
-    } else {
-      var blob = new Blob([array]);
-      success(msg, URL.createObjectURL(blob));
-    }
+          if (isNode) {
+            success(msg, Array.from(new Int32Array(array)));
+          } else {
+            var blob = new Blob([array]);
+            success(msg, URL.createObjectURL(blob));
+          }
+        })
+        .catch(function(err) {
+          handleError(err, msg);
+        });
   } catch (e) {
     handleError(e, msg);
   }

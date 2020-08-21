@@ -49,8 +49,8 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
         title: 'byte_jpeg',
         layerType: os.layer.LayerType.TILES,
         icons: os.ui.Icons.TILES,
-        minZoom: 0,
-        maxZoom: 0,
+        gpkgMinZoom: 0,
+        gpkgMaxZoom: 0,
         projection: 'EPSG:26711',
         extentProjection: 'EPSG:26711',
         extent: [440720, 3735960, 456080, 3751320]
@@ -59,8 +59,8 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
         title: 'byte_png',
         layerType: os.layer.LayerType.TILES,
         icons: os.ui.Icons.TILES,
-        minZoom: 0,
-        maxZoom: 0,
+        gpkgMinZoom: 0,
+        gpkgMaxZoom: 0,
         projection: 'EPSG:26711',
         extentProjection: 'EPSG:26711',
         extent: [440720, 3735960, 456080, 3751320]
@@ -154,7 +154,7 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
         expect(config.delayUpdateActive).toBe(true);
 
         for (var key in expected[i]) {
-          expect(config[key]).toEqual(expected[i][key]);
+          expect(config[key]).toEqual(expected[i][key], `${key}`);
         }
       }
     });
