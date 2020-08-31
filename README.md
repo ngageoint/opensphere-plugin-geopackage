@@ -44,3 +44,6 @@ you close and you can zoom in a little further to see the imagery.
  4. `cd opensphere` and run `yarn build`
  4. `cd ../opensphere-electron` and run `yarn postinstall` and verify that there are no errors
  5. Run the app or create the installers per instructions in [opensphere-electron](https://github.com/ngageoint/opensphere-electron)
+ 
+## Developing with Electron and GeoPackage
+  * In order to develop with Electron and GeoPackage, make sure to have canvas installed as a native dependency on your machine. You can install canvas [here](https://github.com/Automattic/node-canvas#compiling).
