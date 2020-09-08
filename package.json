@@ -100,8 +100,8 @@
     "karma-junit-reporter": "^1.2.0",
     "mkdirp": "^0.5.1",
     "modernizr": "^3.8.0",
-    "opensphere-build-closure-helper": "^5.0.0",
-    "opensphere-build-resolver": "^7.1.0",
+    "opensphere-build-closure-helper": "^6.0.0",
+    "opensphere-build-resolver": "^7.6.0",
     "rimraf": "^2.5.4",
     "sass-lint": "^1.12.1",
     "semantic-release": "^15.13.32"
