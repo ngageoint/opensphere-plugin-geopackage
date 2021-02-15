@@ -2,6 +2,8 @@ goog.module('plugin.geopackage');
 
 const log = goog.require('goog.log');
 
+const Logger = goog.requireType('goog.log.Logger');
+
 
 /**
  * @define {string}
@@ -23,7 +25,7 @@ exports.ID = 'geopackage';
 /**
  * The logger.
  * @const
- * @type {goog.debug.Logger}
+ * @type {Logger}
  */
 const LOGGER = log.getLogger('plugin.geopackage');
 
