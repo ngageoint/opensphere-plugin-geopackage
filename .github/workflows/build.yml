@@ -14,11 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        name: ngageoint/opensphere-yarn-workspace
+        repository: ngageoint/opensphere-yarn-workspace
 
     - uses: actions/checkout@v2
       with:
-        name: ngageoint/opensphere
+        repository: ngageoint/opensphere
         path: opensphere-yarn-workspace/workspace/opensphere
 
     - uses: actions/checkout@v2
