@@ -45,17 +45,17 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        yarn config list
+        ls -al
         yarn --prefer-offline
-      working-directory: ./opensphere-yarn-workspace/workspace
+      working-directory: opensphere-yarn-workspace/workspace
 
     - name: Lint Source
       run: yarn lint
-      working-directory: ./opensphere-yarn-workspace/workspace/${{ github.event.repository.name }}
+      working-directory: opensphere-yarn-workspace/workspace/${{ github.event.repository.name }}
 
     - name: Unit Tests
       run: yarn test
-      working-directory: ./opensphere-yarn-workspace/workspace/${{ github.event.repository.name }}
+      working-directory: opensphere-yarn-workspace/workspace/${{ github.event.repository.name }}
 
     - name: Release
       if: github.ref == 'refs/heads/master'
@@ -63,4 +63,4 @@ jobs:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       run: yarn semantic-release
-      working-directory: ./opensphere-yarn-workspace/workspace/${{ github.event.repository.name }}
+      working-directory: opensphere-yarn-workspace/workspace/${{ github.event.repository.name }}
