@@ -45,9 +45,7 @@ jobs:
           ${{ runner.os }}-yarn-
 
     - name: Install Dependencies
-      run: |
-        ls -al
-        yarn --prefer-offline
+      run: yarn --prefer-offline
       working-directory: opensphere-yarn-workspace/workspace
 
     - name: Lint Source
