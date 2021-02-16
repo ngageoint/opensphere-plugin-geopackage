@@ -15,6 +15,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         repository: ngageoint/opensphere-yarn-workspace
+        path: opensphere-yarn-workspace
 
     - uses: actions/checkout@v2
       with:
