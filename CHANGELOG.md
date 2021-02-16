@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.1...v1.1.2) (2021-02-16)
+
+
+### Bug Fixes
+
+* **goog:** fix logger typing ([ac3f5d6](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/ac3f5d67799d4525f12b3233290d706c7235dca3))
+
 ## [1.1.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.0...v1.1.1) (2020-07-20)
 
 
