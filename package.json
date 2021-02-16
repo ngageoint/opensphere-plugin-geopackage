@@ -79,9 +79,8 @@
   },
   "devDependencies": {
     "angular-mocks": "~1.5.x",
-    "@commitlint/cli": "^8.0.0",
-    "@commitlint/config-conventional": "^8.1.0",
-    "@commitlint/travis-cli": "^8.1.0",
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
     "@semantic-release/changelog": "^3.0.2",
     "@semantic-release/commit-analyzer": "^6.1.0",
     "@semantic-release/git": "^7.0.8",
