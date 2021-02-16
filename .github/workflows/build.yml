@@ -46,7 +46,7 @@ jobs:
     - name: Install Dependencies
       run: |
         yarn config list
-        yarn --frozen-lockfile --prefer-offline
+        yarn --prefer-offline
       working-directory: ./opensphere-yarn-workspace/workspace
 
     - name: Lint Source
