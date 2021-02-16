@@ -16,16 +16,19 @@ jobs:
       with:
         repository: ngageoint/opensphere-yarn-workspace
         path: opensphere-yarn-workspace
+        persist-credentials: false
 
     - uses: actions/checkout@v2
       with:
         repository: ngageoint/opensphere
         path: opensphere-yarn-workspace/workspace/opensphere
+        persist-credentials: false
 
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
         path: opensphere-yarn-workspace/workspace/${{ github.event.repository.name }}
+        persist-credentials: false
 
     - name: Install Node.js
       uses: actions/setup-node@v2
