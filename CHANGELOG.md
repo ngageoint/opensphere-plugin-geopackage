@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.2...v1.1.3) (2021-04-13)
+
+
+### Bug Fixes
+
+* **map:** don't destructure PROJECTION as it may change ([b9f04e3](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/b9f04e3849052437e492ab7a315c0b74914c7e77))
+
 ## [1.1.2](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.1...v1.1.2) (2021-02-16)
 
 
