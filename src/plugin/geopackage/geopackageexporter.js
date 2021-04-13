@@ -8,7 +8,7 @@ const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
 const OSEventType = goog.require('os.events.EventType');
 const RecordField = goog.require('os.data.RecordField');
 const AbstractExporter = goog.require('os.ex.AbstractExporter');
-const {PROJECTION} = goog.require('os.map');
+const osMap = goog.require('os.map');
 const {EPSG4326} = goog.require('os.proj');
 const {getElectron, getWorker, ExportCommands, MsgType} = goog.require('plugin.geopackage');
 
@@ -264,7 +264,7 @@ class Exporter extends AbstractExporter {
     }
 
     const geojson = this.format.writeFeatureObject(feature, {
-      featureProjection: PROJECTION,
+      featureProjection: osMap.PROJECTION,
       dataProjection: EPSG4326,
       fields: this.fields
     });
