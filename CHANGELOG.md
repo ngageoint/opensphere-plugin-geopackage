@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.3...v1.2.0) (2021-04-22)
+
+
+### Features
+
+* **gcc:** update compiler and use webpack in tests ([2c68070](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/2c6807077072e686701c775b5fcaad0e5d3eb6fb))
+
 ## [1.1.3](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.2...v1.1.3) (2021-04-13)
 
 
