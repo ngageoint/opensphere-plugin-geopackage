@@ -96,7 +96,7 @@ class Exporter extends AbstractExporter {
    * @inheritDoc
    */
   getMimeType() {
-    return 'application/x-sqlite3';
+    return 'application/vnd.opengeospatial.geopackage+sqlite3';
   }
 
   /**

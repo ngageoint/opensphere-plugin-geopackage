@@ -1,15 +1,17 @@
 goog.module('plugin.geopackage.GeoPackageImportUI');
 
-const AlertManager = goog.require('os.alert.AlertManager');
-const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
-const {isLocal, FILE_URL_ENABLED} = goog.require('os.file');
-const FileStorage = goog.require('os.file.FileStorage');
 const AbstractImportUI = goog.require('os.ui.im.AbstractImportUI');
-const windows = goog.require('os.ui.menu.windows');
-const geopackage = goog.require('plugin.geopackage');
+const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
+const AlertManager = goog.require('os.alert.AlertManager');
+const DataProviderEventType = goog.require('os.data.DataProviderEventType');
+const FileStorage = goog.require('os.file.FileStorage');
 const GeoPackageProvider = goog.require('plugin.geopackage.GeoPackageProvider');
-
 const OSFile = goog.requireType('os.file.File');
+const geopackage = goog.require('plugin.geopackage');
+const windows = goog.require('os.ui.menu.windows');
+const {isLocal, FILE_URL_ENABLED} = goog.require('os.file');
+
+const DataProviderEvent = goog.requireType('os.data.DataProviderEvent');
 
 
 /**
@@ -48,7 +50,8 @@ class GeoPackageImportUI extends AbstractImportUI {
 
         AlertManager.getInstance().sendAlert(`${file.getFileName()} GeoPackage refreshed`, AlertEventSeverity.INFO);
       } else if (isLocal(file)) {
-        FileStorage.getInstance().storeFile(file, true).addCallbacks(this.onFileReady, this.onFileError, this);
+        FileStorage.getInstance().storeFile(file, true)
+            .addCallbacks(this.onFileReady.bind(this, opt_config), this.onFileError, this);
       } else {
         this.onFileReady();
       }
@@ -56,9 +59,11 @@ class GeoPackageImportUI extends AbstractImportUI {
   }
 
   /**
+   * Handler for file readiness.
+   * @param {Object<string, *>=} opt_config
    * @protected
    */
-  onFileReady() {
+  onFileReady(opt_config) {
     const file = this.file;
     const conf = {
       'type': geopackage.ID,
@@ -78,7 +83,12 @@ class GeoPackageImportUI extends AbstractImportUI {
 
     AlertManager.getInstance().sendAlert(`${file.getFileName()} GeoPackage added!`, AlertEventSeverity.INFO);
 
-    windows.openWindow('addData');
+    if (opt_config && opt_config['defaultImport']) {
+      provider.listenOnce(DataProviderEventType.LOADED, this.onProviderLoaded, false, this);
+    } else {
+      windows.openWindow('addData');
+    }
+
     this.file = null;
   }
 
@@ -89,6 +99,21 @@ class GeoPackageImportUI extends AbstractImportUI {
   onFileError(opt_reason) {
     AlertManager.getInstance().sendAlert(`Error adding GeoPackage. ${opt_reason}`);
     this.file = null;
+  }
+
+  /**
+   * Handler for provider load. Activates the underlying descriptors to display the layers on the map.
+   * @param {DataProviderEvent} event The loading event.
+   */
+  onProviderLoaded(event) {
+    const provider = /** @type {GeoPackageProvider} */ (event.target);
+    const children = provider.getChildren();
+
+    if (children && children.length) {
+      children.forEach((descriptorNode) => {
+        descriptorNode.getDescriptor().setActive(true);
+      });
+    }
   }
 }
 
