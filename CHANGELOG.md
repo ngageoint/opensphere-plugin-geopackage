@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.2.0...v1.3.0) (2021-05-05)
+
+
+### Features
+
+* **export:** adds support for exporting features to a new layer ([f9ba3f2](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/f9ba3f21231c721431eb5c6939c170689fe0e29b))
+
 # [1.2.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.1.3...v1.2.0) (2021-04-22)
 
 
