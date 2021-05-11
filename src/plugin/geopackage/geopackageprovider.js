@@ -1,21 +1,23 @@
 goog.module('plugin.geopackage.GeoPackageProvider');
 
-const GoogEventType = goog.require('goog.events.EventType');
-const log = goog.require('goog.log');
-const NetEventType = goog.require('goog.net.EventType');
-const ResponseType = goog.require('goog.net.XhrIo.ResponseType');
-const {makeSafe, intAwareCompare} = goog.require('goog.string');
-const AlertManager = goog.require('os.alert.AlertManager');
-const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
-const ConfigDescriptor = goog.require('os.data.ConfigDescriptor');
-const {isFileSystem} = goog.require('os.file');
-const LayerType = goog.require('os.layer.LayerType');
-const Request = goog.require('os.net.Request');
-const Icons = goog.require('os.ui.Icons');
-const BaseProvider = goog.require('os.ui.data.BaseProvider');
-const DescriptorNode = goog.require('os.ui.data.DescriptorNode');
+goog.require('os.ui.data.LayerCheckboxUI');
+
 const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer');
+const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
+const AlertManager = goog.require('os.alert.AlertManager');
+const BaseProvider = goog.require('os.ui.data.BaseProvider');
+const ConfigDescriptor = goog.require('os.data.ConfigDescriptor');
+const DescriptorNode = goog.require('os.ui.data.DescriptorNode');
+const GoogEventType = goog.require('goog.events.EventType');
+const Icons = goog.require('os.ui.Icons');
+const LayerType = goog.require('os.layer.LayerType');
+const NetEventType = goog.require('goog.net.EventType');
+const Request = goog.require('os.net.Request');
+const ResponseType = goog.require('goog.net.XhrIo.ResponseType');
+const log = goog.require('goog.log');
 const {getWorker, isElectron, MsgType, ID} = goog.require('plugin.geopackage');
+const {isFileSystem} = goog.require('os.file');
+const {makeSafe, intAwareCompare} = goog.require('goog.string');
 
 const GoogEvent = goog.requireType('goog.events.Event');
 
@@ -147,6 +149,20 @@ class GeoPackageProvider extends AbstractLoadingServer {
     }
 
     super.finish();
+  }
+
+  /**
+   * @inheritDoc
+   */
+  getCheckboxDisabled() {
+    return false;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  formatCheckbox() {
+    return '<layercheckbox></layercheckbox>';
   }
 
   /**
