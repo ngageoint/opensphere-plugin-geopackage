@@ -1,6 +1,5 @@
 goog.module('plugin.geopackage.GeoPackageProvider');
 
-goog.require('os.ui.data.LayerCheckboxUI');
 
 const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer');
 const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
@@ -18,6 +17,7 @@ const log = goog.require('goog.log');
 const {getWorker, isElectron, MsgType, ID} = goog.require('plugin.geopackage');
 const {isFileSystem} = goog.require('os.file');
 const {makeSafe, intAwareCompare} = goog.require('goog.string');
+const {directiveTag} = goog.require('os.ui.data.LayerCheckboxUI');
 
 const GoogEvent = goog.requireType('goog.events.Event');
 
@@ -162,7 +162,7 @@ class GeoPackageProvider extends AbstractLoadingServer {
    * @inheritDoc
    */
   formatCheckbox() {
-    return '<layercheckbox></layercheckbox>';
+    return `<${directiveTag}></${directiveTag}>`;
   }
 
   /**
