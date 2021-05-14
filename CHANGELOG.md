@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.3.0...v1.4.0) (2021-05-14)
+
+
+### Bug Fixes
+
+* **provider:** use directiveTag import ([fb12ace](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/fb12ace77215f54274248ac091d0dd3e8a1a9707))
+
+
+### Features
+
+* **provider:** updates provider to support turning on full gpkg file ([ba93ff3](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/ba93ff3988f77cea84380ce491fb0f5a3ee47944))
+
 # [1.3.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.2.0...v1.3.0) (2021-05-05)
 
 
