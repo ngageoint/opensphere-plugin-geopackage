@@ -67,10 +67,12 @@ class TileLayerConfig extends AbstractTileLayerConfig {
   getSource(options) {
     const parts = options['id'].split(ID_DELIMITER);
 
+    const resolutions = /** @type {Array<number>|undefined} */ (options['resolutions']);
+
     const gpkgTileGrid = new TileGrid(/** @type {olx.tilegrid.TileGridOptions} */ ({
       'extent': options.extent,
       'minZoom': Math.max(0, Math.round(options['gpkgMinZoom'])),
-      'resolutions': options['resolutions'],
+      'resolutions': resolutions,
       'tileSizes': options['tileSizes']
     }));
 
@@ -168,23 +170,9 @@ const tileListener = (evt) => {
       delete tiles[key];
 
       if (msg.type === MsgType.SUCCESS) {
-        if (msg.data) {
-          let url = null;
-
-          if (typeof msg.data === 'string') {
-            // Web Worker path
-            url = msg.data;
-          } else if (Array.isArray(msg.data)) {
-            // node process path
-            const i32arr = Int32Array.from(/** @type {!Array<!number>} */ (msg.data));
-            const i8arr = new Uint8Array(i32arr);
-            const blob = new Blob([i8arr]);
-            url = URL.createObjectURL(blob);
-          }
-
-          if (url) {
-            imageTile.getImage().src = url;
-          }
+        // A data URL should be returned. If not, assume the tile is not available.
+        if (msg.data && typeof msg.data === 'string') {
+          imageTile.getImage().src = msg.data;
         } else {
           // Tile is emtpy, so display a blank image. Note that TileState.EMPTY is NOT WHAT WE WANT.
           // Empty causes OpenLayers to keep displaying the parent tile for coverage. We want a blank

@@ -49,6 +49,8 @@ module.exports = function(config) {
       {pattern: resolver.resolveModulePath('d3/d3.min.js', __dirname), watched: false, included: true, served: true},
       {pattern: resolver.resolveModulePath('jsts/dist/jsts.min.js', __dirname), watched: false, included: true, served: true},
       {pattern: resolver.resolveModulePath('@ngageoint/geopackage/dist/geopackage.min.js', __dirname), watched: false, included: false, served: true},
+      {pattern: resolver.resolveModulePath('@ngageoint/geopackage/dist/sql-wasm.wasm', __dirname), watched: false, included: false, served: true},
+      {pattern: resolver.resolveModulePath('@ngageoint/geopackage/dist/canvaskit/canvaskit.wasm', __dirname), watched: false, included: false, served: true},
 
       // test resources
       {pattern: 'test/resources/**/*', included: false},

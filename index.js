@@ -49,7 +49,11 @@ module.exports = {
     }, {
       source: resolver.resolveModulePath('@ngageoint/geopackage/dist'),
       target: 'vendor/geopackage',
-      files: ['geopackage.min.js']
+      files: [
+        'geopackage.min.js',
+        'sql-wasm.wasm',
+        'canvaskit/canvaskit.wasm'
+      ]
     }]
   }],
   debugCss: path.relative(__dirname, path.join(buildPath, 'combined.css')),
