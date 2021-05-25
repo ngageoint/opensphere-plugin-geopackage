@@ -3,7 +3,7 @@
  */
 'use strict';
 
-var geopackage;
+var GeoPackage;
 
 
 /**
@@ -24,7 +24,7 @@ var isNode = false;
 /**
  * placeholder for library
  */
-var geopackage = null;
+var GeoPackage = null;
 
 
 /**
@@ -121,7 +121,7 @@ var openGpkg = function(msg) {
     return;
   }
 
-  geopackage.open(data)
+  GeoPackage.GeoPackageAPI.open(data)
       .then(function(gpkg) {
         gpkgById[msg.id] = gpkg;
         success(msg);
@@ -285,8 +285,8 @@ var listDescriptors = function(msg) {
             type: 'geopackage-tile',
             title: info.tableName,
             tableName: info.tableName,
-            minZoom: Math.round(info.minZoom),
-            maxZoom: Math.round(info.maxZoom),
+            gpkgMinZoom: Math.round(info.minZoom),
+            gpkgMaxZoom: Math.round(info.maxZoom),
             resolutions: fixResolutions(tileMatrices.map(getTileMatrixToResolutionMapper(info))),
             tileSizes: fixSizes(tileMatrices.map(tileMatrixToTileSize))
           };
@@ -321,8 +321,9 @@ var listDescriptors = function(msg) {
 
         if (info) {
           var cols = info.columns.map(function(col) {
+            var dataType = GeoPackage.GeoPackageDataType[col.dataType] || '';
             return /** @type {os.ogc.FeatureTypeColumn} */ ({
-              type: col.dataType.toLowerCase(),
+              type: dataType.toLowerCase(),
               name: col.name
             });
           });
@@ -363,33 +364,42 @@ var getTile = function(msg) {
     return;
   }
 
-  if (!msg.tileCoord) {
-    handleError('tileCoord property must be set', msg);
+  if (msg.zoom == null) {
+    handleError('zoom property must be set', msg);
     return;
   }
 
-  if (msg.tileCoord.length !== 3) {
-    handleError('tileCoord [z, x, y] must have a length of exactly 3', msg);
+  if (!msg.projection) {
+    handleError('projection property must be set', msg);
+    return;
+  }
+
+  if (!msg.width) {
+    handleError('width property must be set', msg);
+    return;
+  }
+
+  if (!msg.height) {
+    handleError('height property must be set', msg);
+    return;
+  }
+
+  if (!msg.extent) {
+    handleError('extent (ol.Extent in EPSG:4326) property must be set', msg);
     return;
   }
 
   try {
     var tileDao = gpkg.getTileDao(msg.tableName);
-    var tile = tileDao.queryForTile(msg.tileCoord[1], -msg.tileCoord[2] - 1, msg.tileCoord[0]);
-
-    if (!tile) {
-      success(msg);
-      return;
-    }
-
-    var array = tile.getTileData();
-
-    if (isNode) {
-      success(msg, Array.from(new Int32Array(array)));
-    } else {
-      var blob = new Blob([array]);
-      success(msg, URL.createObjectURL(blob));
-    }
+    var bbox = new GeoPackage.BoundingBox(msg.extent[0], msg.extent[2], msg.extent[1], msg.extent[3]);
+    var ret = new GeoPackage.GeoPackageTileRetriever(tileDao, msg.width, msg.height);
+    ret.getTileWithWgs84BoundsInProjection(bbox, msg.zoom, msg.projection)
+        .then(function(tile) {
+          success(msg, tile);
+        })
+        .catch(function(err) {
+          handleError(err, msg);
+        });
   } catch (e) {
     handleError(e, msg);
   }
@@ -408,8 +418,7 @@ var getFeatures = function(msg) {
   }
 
   try {
-    var result = geopackage.iterateGeoJSONFeaturesFromTable(gpkg, msg.tableName);
-    var itr = result.results;
+    var itr = gpkg.iterateGeoJSONFeatures(msg.tableName);
     var record = itr.next();
     while (record) {
       success(msg, record.value);
@@ -434,7 +443,7 @@ var exportCreate = function(msg) {
 
   var url = msg.url || (isNode ? 'tmp.gpkg' : undefined);
 
-  geopackage.create(url)
+  GeoPackage.create(url)
       .then(function(gpkg) {
         if (gpkg) {
           gpkgById[msg.id] = gpkg;
@@ -463,12 +472,12 @@ var exportCreateTable = function(msg) {
     return;
   }
 
-  var FeatureColumn = geopackage.FeatureColumn;
-  var DataType = geopackage.DataTypes.GPKGDataType;
+  var FeatureColumn = GeoPackage.FeatureColumn;
+  var DataType = GeoPackage.DataTypes.GPKGDataType;
 
   // disable camelcase checks for external library that does not conform to the rule
   /* eslint-disable google-camelcase/google-camelcase */
-  var geometryColumns = new geopackage.GeometryColumns();
+  var geometryColumns = new GeoPackage.GeometryColumns();
   geometryColumns.table_name = msg.tableName;
   geometryColumns.column_name = 'geometry';
   geometryColumns.geometry_type_name = 'GEOMETRY';
@@ -512,7 +521,7 @@ var exportCreateTable = function(msg) {
   });
 
   try {
-    geopackage.createFeatureTable(gpkg, msg.tableName, geometryColumns, columns);
+    GeoPackage.createFeatureTable(gpkg, msg.tableName, geometryColumns, columns);
     success(msg);
   } catch (e) {
     handleError(e, msg);
@@ -549,7 +558,7 @@ var exportGeoJSON = function(msg) {
       props.TIME_STOP = new Date(Date.parse(props.TIME_STOP));
     }
 
-    geopackage.addGeoJSONFeatureToGeoPackage(gpkg, geojson, msg.tableName);
+    GeoPackage.addGeoJSONFeatureToGeoPackage(gpkg, geojson, msg.tableName);
     success(msg);
   } catch (e) {
     handleError(e, msg);
@@ -657,9 +666,42 @@ var openLibrary = function(msg) {
   if (!isNode) {
     // this allows the main application to detect where this is loaded
     importScripts(msg.url);
-    geopackage = self.geopackage;
+    GeoPackage = self.GeoPackage;
+    setupLibrary(msg.url.replace('/geopackage.min.js', ''));
   }
 };
+
+
+/**
+ * If the OffscreenCanvas API is supported.
+ * @return {boolean}
+ */
+var supportsOffscreenCanvas = function() {
+  if (typeof self === 'object' && self.OffscreenCanvas) {
+    try {
+      var canvas = new OffscreenCanvas(0, 0);
+      var context = canvas.getContext('2d');
+      return !!context;
+    } catch (e) {}
+  }
+
+  return false;
+};
+
+
+/**
+ * Set up the geopackage library
+ * @param {string} distPath Path to the dist folder.
+ */
+var setupLibrary = function(distPath) {
+  GeoPackage.setSqljsWasmLocateFile((file) => `${distPath}/${file}`);
+  GeoPackage.setCanvasKitWasmLocateFile((file) => `${distPath}/canvaskit/${file}`);
+
+  // Prefer the OffscreenCanvas browser API if available, to avoid loading the CanvasKit library.
+  var canvasAdapter = supportsOffscreenCanvas() ? GeoPackage.OffscreenCanvasAdapter : GeoPackage.CanvasKitCanvasAdapter;
+  GeoPackage.Context.setupCustomContext(GeoPackage.SqljsAdapter, canvasAdapter);
+};
+
 
 var MsgCommands = {
   openLibrary: openLibrary,
@@ -718,6 +760,10 @@ var onMessage = function(evt) {
       module.paths.unshift(process.env.ELECTRON_EXTRA_PATH);
     }
 
-    geopackage = require('@ngageoint/geopackage');
+    GeoPackage = require('@ngageoint/geopackage');
+
+    var basePath = require.resolve('@ngageoint/geopackage');
+    var distPath = basePath.replace('/index.js', '');
+    setupLibrary(distPath);
   }
 })();

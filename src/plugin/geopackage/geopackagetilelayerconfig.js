@@ -2,11 +2,17 @@ goog.module('plugin.geopackage.TileLayerConfig');
 
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
+const {DEFAULT_MAX_ZOOM} = goog.require('ol');
 const ImageTile = goog.require('ol.ImageTile');
 const TileState = goog.require('ol.TileState');
+const {transformExtent} = goog.require('ol.proj');
 const TileImage = goog.require('ol.source.TileImage');
+const {createForProjection} = goog.require('ol.tilegrid');
 const TileGrid = goog.require('ol.tilegrid.TileGrid');
+const osMap = goog.require('os.map');
+const {EPSG4326} = goog.require('os.proj');
 const AbstractTileLayerConfig = goog.require('os.layer.config.AbstractTileLayerConfig');
+const {ID_DELIMITER} = goog.require('os.ui.data.BaseProvider');
 const {MsgType, getWorker} = goog.require('plugin.geopackage');
 const Tile = goog.require('plugin.geopackage.Tile');
 
@@ -59,21 +65,28 @@ class TileLayerConfig extends AbstractTileLayerConfig {
    * @inheritDoc
    */
   getSource(options) {
-    const parts = options['id'].split(os.ui.data.BaseProvider.ID_DELIMITER);
+    const parts = options['id'].split(ID_DELIMITER);
+
+    const resolutions = /** @type {Array<number>|undefined} */ (options['resolutions']);
+
+    const gpkgTileGrid = new TileGrid(/** @type {olx.tilegrid.TileGridOptions} */ ({
+      'extent': options.extent,
+      'minZoom': Math.max(0, Math.round(options['gpkgMinZoom'])),
+      'resolutions': resolutions,
+      'tileSizes': options['tileSizes']
+    }));
+
+    const layerTileGrid = createForProjection(osMap.PROJECTION, DEFAULT_MAX_ZOOM, [256, 256]);
 
     const source = new TileImage(/** @type {olx.source.TileImageOptions} */ ({
       'projection': this.projection,
-      'tileLoadFunction': getTileLoadFunction(parts[0]),
+      'tileLoadFunction': getTileLoadFunction(parts[0], gpkgTileGrid, layerTileGrid),
       'tileUrlFunction': getTileUrlFunction(parts[1]),
-      'tileGrid': new TileGrid(/** @type {olx.tilegrid.TileGridOptions} */ ({
-        'extent': options.extent,
-        'minZoom': Math.max(0, Math.round(options['minZoom'])),
-        'resolutions': options['resolutions'],
-        'tileSizes': options['tileSizes']
-      })),
+      'tileGrid': layerTileGrid,
       'wrapX': this.projection.isGlobal()
     }));
 
+    source.setExtent(options.extent);
     addTileListener();
     return source;
   }
@@ -82,9 +95,11 @@ class TileLayerConfig extends AbstractTileLayerConfig {
 
 /**
  * @param {string} providerId
+ * @param {ol.tilegrid.TileGrid} gpkgTileGrid
+ * @param {ol.tilegrid.TileGrid} tileGrid
  * @return {!ol.TileLoadFunctionType}
  */
-const getTileLoadFunction = (providerId) => (
+const getTileLoadFunction = (providerId, gpkgTileGrid, tileGrid) => (
   /**
    * @param {ol.Tile} tile The image tile
    * @param {string} layerName The layer name
@@ -98,14 +113,25 @@ const getTileLoadFunction = (providerId) => (
     }
 
     if (layerName) {
+      const tileCoord = imageTile.getTileCoord();
+      let extent = tileGrid.getTileCoordExtent(tileCoord);
+      extent = transformExtent(extent, osMap.PROJECTION, EPSG4326);
+      const layerResolution = tileGrid.getResolution(tileCoord[0]);
+      const gpkgZoom = gpkgTileGrid.getZForResolution(layerResolution);
+      const size = tileGrid.getTileSize(tileCoord[0]);
+
       const msg = /** @type {GeoPackageWorkerMessage} */ ({
         id: providerId,
         type: MsgType.GET_TILE,
         tableName: layerName,
-        tileCoord: imageTile.getTileCoord()
+        projection: osMap.PROJECTION.getCode(),
+        extent: extent,
+        zoom: gpkgZoom,
+        width: size[0],
+        height: size[1]
       });
 
-      const key = msg.id + '#' + msg.type + '#' + msg.tableName + '#' + msg.tileCoord.join(',');
+      const key = msg.id + '#' + msg.type + '#' + msg.tableName + '#' + msg.extent.join(',');
       tiles[key] = imageTile;
       getWorker().postMessage(msg);
     }
@@ -135,7 +161,7 @@ const tileListener = (evt) => {
       msg.message.id,
       msg.message.type,
       msg.message.tableName,
-      msg.message.tileCoord.join(',')
+      (msg.message.tileCoord || msg.message.extent).join(',')
     ].join('#');
 
     const imageTile = tiles[key];
@@ -144,23 +170,9 @@ const tileListener = (evt) => {
       delete tiles[key];
 
       if (msg.type === MsgType.SUCCESS) {
-        if (msg.data) {
-          let url = null;
-
-          if (typeof msg.data === 'string') {
-            // Web Worker path
-            url = msg.data;
-          } else if (Array.isArray(msg.data)) {
-            // node process path
-            const i32arr = Int32Array.from(/** @type {!Array<!number>} */ (msg.data));
-            const i8arr = new Uint8Array(i32arr);
-            const blob = new Blob([i8arr]);
-            url = URL.createObjectURL(blob);
-          }
-
-          if (url) {
-            imageTile.getImage().src = url;
-          }
+        // A data URL should be returned. If not, assume the tile is not available.
+        if (msg.data && typeof msg.data === 'string') {
+          imageTile.getImage().src = msg.data;
         } else {
           // Tile is emtpy, so display a blank image. Note that TileState.EMPTY is NOT WHAT WE WANT.
           // Empty causes OpenLayers to keep displaying the parent tile for coverage. We want a blank
