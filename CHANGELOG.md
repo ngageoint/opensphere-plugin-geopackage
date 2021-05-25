@@ -1,3 +1,11 @@
+# [1.5.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.4.0...v1.5.0) (2021-05-25)
+
+
+### Features
+
+* **tile:** support tile canvas rendering in workers ([5a60501](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/5a6050125eb01a37b0cbf794dbf3fda9c9085802))
+* **tiles:** use reprojection/stitching to pull tiles ([d5dc78f](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/d5dc78f46c6cb3764832c70e4753af1faf93bc6d))
+
 # [1.4.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.3.0...v1.4.0) (2021-05-14)
 
 
