@@ -443,7 +443,7 @@ var exportCreate = function(msg) {
 
   var url = msg.url || (isNode ? 'tmp.gpkg' : undefined);
 
-  GeoPackage.create(url)
+  GeoPackage.GeoPackageAPI.create(url)
       .then(function(gpkg) {
         if (gpkg) {
           gpkgById[msg.id] = gpkg;
@@ -473,21 +473,22 @@ var exportCreateTable = function(msg) {
   }
 
   var FeatureColumn = GeoPackage.FeatureColumn;
-  var DataType = GeoPackage.DataTypes.GPKGDataType;
+  var DataType = GeoPackage.GeoPackageDataType;
+  var GeometryType = GeoPackage.GeometryType;
 
   // disable camelcase checks for external library that does not conform to the rule
   /* eslint-disable google-camelcase/google-camelcase */
   var geometryColumns = new GeoPackage.GeometryColumns();
   geometryColumns.table_name = msg.tableName;
   geometryColumns.column_name = 'geometry';
-  geometryColumns.geometry_type_name = 'GEOMETRY';
+  geometryColumns.geometry_type_name = GeometryType.nameFromType(GeometryType.GEOMETRY);
   geometryColumns.z = 2;
   geometryColumns.m = 0;
   /* eslint-enable google-camelcase/google-camelcase */
 
   var columns = [];
-  columns.push(FeatureColumn.createPrimaryKeyColumnWithIndexAndName(0, 'id'));
-  columns.push(FeatureColumn.createGeometryColumn(1, 'geometry', 'GEOMETRY', false, null));
+  columns.push(FeatureColumn.createPrimaryKeyColumn(0, 'id'));
+  columns.push(FeatureColumn.createGeometryColumn(1, 'geometry', GeometryType.GEOMETRY, false, null));
 
   msg.columns.forEach(function(col) {
     if (col.field.toLowerCase() === 'id' || col.field.toLowerCase() === 'geometry' ||
@@ -495,33 +496,31 @@ var exportCreateTable = function(msg) {
       return;
     }
 
-    var type = DataType.GPKG_DT_TEXT;
-    var defaultValue = '';
-    var colType = col.type.toLowerCase();
-
-    if (colType === 'decimal') {
-      type = DataType.GPKG_DT_REAL;
-      defaultValue = null;
-    } else if (colType === 'integer') {
-      type = DataType.GPKG_DT_INTEGER;
-      defaultValue = null;
-    } else if (colType === 'datetime') {
-      type = DataType.GPKG_DT_TEXT;
-      defaultValue = null;
-    }
-
     if (col.field === 'recordTime') {
-      columns.push(FeatureColumn.createColumnWithIndex(columns.length,
-          'TIME_START', DataType.GPKG_DT_DATETIME, false, null));
-      columns.push(FeatureColumn.createColumnWithIndex(columns.length,
-          'TIME_STOP', DataType.GPKG_DT_DATETIME, false, null));
+      columns.push(FeatureColumn.createColumn(columns.length, 'TIME_START', DataType.DATETIME, false, null));
+      columns.push(FeatureColumn.createColumn(columns.length, 'TIME_STOP', DataType.DATETIME, false, null));
     } else {
-      columns.push(FeatureColumn.createColumnWithIndex(columns.length, col.field, type, false, defaultValue));
+      var type = DataType.TEXT;
+      var defaultValue = '';
+      var colType = col.type.toLowerCase();
+
+      if (colType === 'decimal') {
+        type = DataType.REAL;
+        defaultValue = null;
+      } else if (colType === 'integer') {
+        type = DataType.INTEGER;
+        defaultValue = null;
+      } else if (colType === 'datetime') {
+        type = DataType.TEXT;
+        defaultValue = null;
+      }
+
+      columns.push(FeatureColumn.createColumn(columns.length, col.field, type, false, defaultValue));
     }
   });
 
   try {
-    GeoPackage.createFeatureTable(gpkg, msg.tableName, geometryColumns, columns);
+    gpkg.createFeatureTable(msg.tableName, geometryColumns, columns);
     success(msg);
   } catch (e) {
     handleError(e, msg);
@@ -558,7 +557,7 @@ var exportGeoJSON = function(msg) {
       props.TIME_STOP = new Date(Date.parse(props.TIME_STOP));
     }
 
-    GeoPackage.addGeoJSONFeatureToGeoPackage(gpkg, geojson, msg.tableName);
+    gpkg.addGeoJSONFeatureToGeoPackage(geojson, msg.tableName);
     success(msg);
   } catch (e) {
     handleError(e, msg);
@@ -578,18 +577,15 @@ var exportsById = {};
 var exportWrite = function(msg) {
   var gpkg = getGpkg(msg);
 
-  gpkg.export(function(err, data) {
-    if (err) {
-      handleError(err, msg);
-      return;
-    }
-
+  gpkg.export().then((data) => {
     exportsById[msg.id] = {
       data: new Uint8Array(data),
       index: 0
     };
 
     success(msg);
+  }, (err) => {
+    handleError(err, msg);
   });
 };
 
