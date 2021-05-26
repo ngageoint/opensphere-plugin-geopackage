@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.0...v1.5.1) (2021-05-26)
+
+
+### Bug Fixes
+
+* **sqlite:** downgrade better-sqlite3 to 7.1.2 to fix glibc incompatibility ([3b0a2e3](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/3b0a2e34d7ce574993a5e12de3b925d05774ea67))
+
 # [1.5.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.4.0...v1.5.0) (2021-05-25)
 
 
