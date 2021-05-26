@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.1...v1.5.2) (2021-05-26)
+
+
+### Bug Fixes
+
+* **export:** update export APIs for geopackage-js 4.x ([c52f2de](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/c52f2defdeedf477db7e0c3fc6f042dda6eb686e))
+
 ## [1.5.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.0...v1.5.1) (2021-05-26)
 
 
