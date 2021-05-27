@@ -688,10 +688,11 @@ var supportsOffscreenCanvas = function() {
 /**
  * Set up the geopackage library
  * @param {string} distPath Path to the dist folder.
+ * @param {string=} pathSep The path separator. Defaults to '/'.
  */
-var setupLibrary = function(distPath) {
-  GeoPackage.setSqljsWasmLocateFile((file) => `${distPath}/${file}`);
-  GeoPackage.setCanvasKitWasmLocateFile((file) => `${distPath}/canvaskit/${file}`);
+var setupLibrary = function(distPath, pathSep = '/') {
+  GeoPackage.setSqljsWasmLocateFile((file) => [distPath, file].join(pathSep));
+  GeoPackage.setCanvasKitWasmLocateFile((file) => [distPath, 'canvaskit', file].join(pathSep));
 
   // Prefer the OffscreenCanvas browser API if available, to avoid loading the CanvasKit library.
   var canvasAdapter = supportsOffscreenCanvas() ? GeoPackage.OffscreenCanvasAdapter : GeoPackage.CanvasKitCanvasAdapter;
@@ -758,8 +759,9 @@ var onMessage = function(evt) {
 
     GeoPackage = require('@ngageoint/geopackage');
 
+    var path = require('path');
     var basePath = require.resolve('@ngageoint/geopackage');
-    var distPath = basePath.replace('/index.js', '');
-    setupLibrary(distPath);
+    var distPath = path.dirname(basePath);
+    setupLibrary(distPath, path.sep);
   }
 })();
