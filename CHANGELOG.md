@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.2...v1.5.3) (2021-05-27)
+
+
+### Bug Fixes
+
+* **worker:** fix path separators in windows electron builds ([d2db7b9](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/d2db7b9c7a749b390f328c213da851206220a922))
+
 ## [1.5.2](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.1...v1.5.2) (2021-05-26)
 
 
