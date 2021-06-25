@@ -83,7 +83,7 @@ class TileLayerConfig extends AbstractTileLayerConfig {
       'tileLoadFunction': getTileLoadFunction(parts[0], gpkgTileGrid, layerTileGrid),
       'tileUrlFunction': getTileUrlFunction(parts[1]),
       'tileGrid': layerTileGrid,
-      'wrapX': this.projection.isGlobal()
+      'wrapX': false // TODO: fix wrapping tiles crashing and displaying incorrectly outside the world extent
     }));
 
     source.setExtent(options.extent);

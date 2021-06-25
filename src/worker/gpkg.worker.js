@@ -82,9 +82,18 @@ var success = function(originalMsg, opt_data) {
 
 
 /**
+ * Map of Geopackages to their IDs.
  * @type {Object<string, Geopackage>}
  */
 var gpkgById = {};
+
+
+/**
+ * Map of tableNames to TileScaling objects.
+ * @type {Object<string, Geopackage>}
+ */
+var tileScalingByTableName = {};
+
 
 /**
  * @param {GeoPackageWorkerMessage} msg
@@ -274,7 +283,10 @@ var listDescriptors = function(msg) {
 
   if (gpkg) {
     try {
-      var tileConfigs = gpkg.getTileTables().map(function(tableName) {
+      var tileTables = gpkg.getTileTables();
+      var tileScaling;
+
+      var tilePromises = tileTables.map(async function(tableName) {
         var tileDao = gpkg.getTileDao(tableName);
         var info = gpkg.getInfoForTable(tileDao);
 
@@ -290,6 +302,20 @@ var listDescriptors = function(msg) {
             resolutions: fixResolutions(tileMatrices.map(getTileMatrixToResolutionMapper(info))),
             tileSizes: fixSizes(tileMatrices.map(tileMatrixToTileSize))
           };
+
+          // create and store a TileScaling for each tile layer that allows requesting tiles at +-25 zoom levels
+          // in order to guarantee that GPKG tile layers are visible at all zoom levels
+          tileScaling = new GeoPackage.TileScaling();
+          /* eslint-disable google-camelcase/google-camelcase */
+          tileScaling.scaling_type = GeoPackage.TileScalingType.IN_OUT;
+          tileScaling.zoom_in = 25;
+          tileScaling.zoom_out = 25;
+          /* eslint-enable google-camelcase/google-camelcase */
+
+          const tileScalingExtension = gpkg.getTileScalingExtension(tableName);
+          await tileScalingExtension.getOrCreateExtension();
+          tileScalingExtension.createOrUpdate(tileScaling);
+          tileScalingByTableName[tableName] = tileScaling;
 
           if (info.contents) {
             config.title = info.contents.identifier || config.title;
@@ -344,7 +370,12 @@ var listDescriptors = function(msg) {
         }
       });
 
-      success(msg, tileConfigs.concat(featureConfigs));
+      // once all the tile layer promises resolve, then call the success callback with the full set of configs
+      Promise.all(tilePromises).then((tileConfigs) => {
+        success(msg, tileConfigs.concat(featureConfigs));
+      }, (error) => {
+        handleError(error, msg);
+      });
     } catch (e) {
       handleError(e, msg);
       return;
@@ -393,6 +424,13 @@ var getTile = function(msg) {
     var tileDao = gpkg.getTileDao(msg.tableName);
     var bbox = new GeoPackage.BoundingBox(msg.extent[0], msg.extent[2], msg.extent[1], msg.extent[3]);
     var ret = new GeoPackage.GeoPackageTileRetriever(tileDao, msg.width, msg.height);
+
+    // set the scaling for the layer on the retriever to ensure tiles come back outside the default range
+    var tileScaling = tileScalingByTableName[msg.tableName];
+    if (tileScaling) {
+      ret.setScaling(tileScaling);
+    }
+
     ret.getTileWithWgs84BoundsInProjection(bbox, msg.zoom, msg.projection)
         .then(function(tile) {
           success(msg, tile);
