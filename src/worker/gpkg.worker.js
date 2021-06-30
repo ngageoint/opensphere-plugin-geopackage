@@ -292,7 +292,6 @@ var listDescriptors = function(msg) {
 
         if (info) {
           var tileMatrices = tileDao.zoomLevelToTileMatrix;
-
           var config = {
             type: 'geopackage-tile',
             title: info.tableName,
@@ -303,13 +302,14 @@ var listDescriptors = function(msg) {
             tileSizes: fixSizes(tileMatrices.map(tileMatrixToTileSize))
           };
 
-          // create and store a TileScaling for each tile layer that allows requesting tiles at +-25 zoom levels
-          // in order to guarantee that GPKG tile layers are visible at all zoom levels
+          // Create and store a TileScaling for each tile layer that allows requesting tiles at +4 to -25 zoom levels.
+          // This allows tile to show at all zoom levels above where the file defines, but only up to +4 zoom levels
+          // higher. Tiles tend to become too blurred once upscaled much more than that.
           tileScaling = new GeoPackage.TileScaling();
           /* eslint-disable google-camelcase/google-camelcase */
           tileScaling.scaling_type = GeoPackage.TileScalingType.IN_OUT;
           tileScaling.zoom_in = 25;
-          tileScaling.zoom_out = 25;
+          tileScaling.zoom_out = 4;
           /* eslint-enable google-camelcase/google-camelcase */
 
           const tileScalingExtension = gpkg.getTileScalingExtension(tableName);
