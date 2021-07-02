@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.3...v1.6.0) (2021-07-02)
+
+
+### Features
+
+* replace global refs and trigger release ([338cc29](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/338cc29e69392ce5a83b397d3625be6db541002b))
+
 ## [1.5.3](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.2...v1.5.3) (2021-05-27)
 
 
