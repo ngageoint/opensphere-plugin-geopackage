@@ -22,6 +22,7 @@ const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer')
 const {getWorker, isElectron, MsgType, ID} = goog.require('plugin.geopackage');
 
 const GoogEvent = goog.requireType('goog.events.Event');
+const ITreeNode = goog.requireType('os.structs.ITreeNode');
 
 
 /**
@@ -32,8 +33,8 @@ const LOGGER = log.getLogger('plugin.geopackage.GeoPackageProvider');
 
 
 /**
- * @param {os.structs.ITreeNode} a The first node
- * @param {os.structs.ITreeNode} b The second node
+ * @param {ITreeNode} a The first node
+ * @param {ITreeNode} b The second node
  * @return {number} per typical compare functions
  */
 const labelSort = (a, b) => intAwareCompare(a.getLabel() || '', b.getLabel() || '');

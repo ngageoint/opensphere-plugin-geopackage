@@ -16,6 +16,8 @@ const {ID_DELIMITER} = goog.require('os.ui.data.BaseProvider');
 const {MsgType, getWorker} = goog.require('plugin.geopackage');
 const Tile = goog.require('plugin.geopackage.Tile');
 
+const Projection = goog.requireType('ol.proj.Projection');
+
 
 /**
  * The logger.
@@ -199,7 +201,7 @@ const getTileUrlFunction = (layerName) => (
   /**
    * @param {ol.TileCoord} tileCoord The tile coordinate
    * @param {number} pixelRatio The tile pixel ratio
-   * @param {ol.proj.Projection} projection The projection
+   * @param {Projection} projection The projection
    * @return {string|undefined} Tile URL
    */
   (tileCoord, pixelRatio, projection) => layerName
