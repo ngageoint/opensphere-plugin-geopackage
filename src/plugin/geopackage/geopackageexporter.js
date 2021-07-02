@@ -5,12 +5,17 @@ const log = goog.require('goog.log');
 const GeoJSON = goog.require('ol.format.GeoJSON');
 const AlertManager = goog.require('os.alert.AlertManager');
 const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
-const OSEventType = goog.require('os.events.EventType');
+const DataManager = goog.require('os.data.DataManager');
 const RecordField = goog.require('os.data.RecordField');
+const OSEventType = goog.require('os.events.EventType');
 const AbstractExporter = goog.require('os.ex.AbstractExporter');
 const osMap = goog.require('os.map');
+const {getMapContainer} = goog.require('os.map.instance');
 const {EPSG4326} = goog.require('os.proj');
 const {getElectron, getWorker, ExportCommands, MsgType} = goog.require('plugin.geopackage');
+
+const ILayer = goog.requireType('os.layer.ILayer');
+const VectorSource = goog.requireType('os.source.Vector');
 
 
 /**
@@ -243,7 +248,7 @@ class Exporter extends AbstractExporter {
     if (id in this.idsToTables_) {
       tableName = this.idsToTables_[id];
     } else {
-      tableName = /** @type {!os.layer.ILayer} */ (os.MapContainer.getInstance().getLayer(id)).getTitle();
+      tableName = /** @type {!ILayer} */ (getMapContainer().getLayer(id)).getTitle();
       this.idsToTables_[id] = tableName;
     }
 
@@ -291,14 +296,14 @@ class Exporter extends AbstractExporter {
 
   /**
    * @param {ol.Feature} feature The feature
-   * @return {?os.source.Vector}
+   * @return {?VectorSource}
    * @private
    */
   getSource_(feature) {
     if (feature) {
       const sourceId = feature.get(RecordField.SOURCE_ID);
       if (typeof sourceId === 'string') {
-        return /** @type {os.source.Vector} */ (os.osDataManager.getSource(sourceId));
+        return /** @type {VectorSource} */ (DataManager.getInstance().getSource(sourceId));
       }
     }
 
