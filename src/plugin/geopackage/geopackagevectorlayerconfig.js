@@ -10,8 +10,11 @@ const DateTimeMapping = goog.require('os.im.mapping.time.DateTimeMapping');
 const FeatureType = goog.require('os.ogc.wfs.FeatureType');
 const GeoJSONLayerConfig = goog.require('plugin.file.geojson.GeoJSONLayerConfig');
 
-
+const Importer = goog.requireType('os.im.Importer');
+const VectorLayer = goog.requireType('os.layer.Vector');
 const FeatureTypeColumn = goog.requireType('os.ogc.FeatureTypeColumn');
+const IFeatureType = goog.requireType('os.ogc.IFeatureType');
+const Request = goog.requireType('os.source.Request');
 
 
 /**
@@ -39,14 +42,14 @@ class VectorLayerConfig extends GeoJSONLayerConfig {
   }
 
   /**
-   * @param {os.layer.Vector} layer
+   * @param {VectorLayer} layer
    * @param {Object<string, *>} options
-   * @param {os.ogc.IFeatureType} featureType
+   * @param {IFeatureType} featureType
    */
   addMappings(layer, options, featureType) {
     const animate = options['animate'] != null ? options['animate'] : false;
-    const source = /** @type {os.source.Request} */ (layer.getSource());
-    const importer = /** @type {os.im.Importer} */ (source.getImporter());
+    const source = /** @type {Request} */ (layer.getSource());
+    const importer = /** @type {Importer} */ (source.getImporter());
 
     const execMappings = [];
     const startField = featureType.getStartDateColumnName();

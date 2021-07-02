@@ -3,6 +3,8 @@ goog.module('plugin.geopackage.mime');
 const Promise = goog.require('goog.Promise');
 const mime = goog.require('os.file.mime');
 
+const OSFile = goog.requireType('os.file.File');
+
 
 /**
  * @type {string}
@@ -13,7 +15,7 @@ exports.TYPE = 'application/vnd.opengeospatial.geopackage+sqlite3';
 
 /**
  * @param {ArrayBuffer} buffer
- * @param {os.file.File} file
+ * @param {OSFile} file
  * @param {*=} opt_context
  * @return {!Promise<*|undefined>}
  */

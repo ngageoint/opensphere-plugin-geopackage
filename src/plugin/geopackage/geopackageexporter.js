@@ -14,6 +14,8 @@ const {getMapContainer} = goog.require('os.map.instance');
 const {EPSG4326} = goog.require('os.proj');
 const {getElectron, getWorker, ExportCommands, MsgType} = goog.require('plugin.geopackage');
 
+const Feature = goog.requireType('ol.Feature');
+const ColumnDefinition = goog.requireType('os.data.ColumnDefinition');
 const ILayer = goog.requireType('os.layer.ILayer');
 const VectorSource = goog.requireType('os.source.Vector');
 
@@ -45,7 +47,7 @@ const LOGGER = log.getLogger('plugin.geopackage.Exporter');
 
 /**
  * The GeoPackage exporter.
- * @extends {AbstractExporter<ol.Feature>}
+ * @extends {AbstractExporter<Feature>}
  */
 class Exporter extends AbstractExporter {
   /**
@@ -295,7 +297,7 @@ class Exporter extends AbstractExporter {
   }
 
   /**
-   * @param {ol.Feature} feature The feature
+   * @param {Feature} feature The feature
    * @return {?VectorSource}
    * @private
    */
@@ -311,7 +313,7 @@ class Exporter extends AbstractExporter {
   }
 
   /**
-   * @param {os.data.ColumnDefinition} colDef
+   * @param {ColumnDefinition} colDef
    * @return {{field: string, type: string}}
    */
   static mapColumnDefToColumn(colDef) {
