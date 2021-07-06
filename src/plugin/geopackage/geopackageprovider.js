@@ -5,14 +5,12 @@ const log = goog.require('goog.log');
 const NetEventType = goog.require('goog.net.EventType');
 const ResponseType = goog.require('goog.net.XhrIo.ResponseType');
 const {makeSafe, intAwareCompare} = goog.require('goog.string');
-const olProj = goog.require('ol.proj');
 
 const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
 const AlertManager = goog.require('os.alert.AlertManager');
 const ConfigDescriptor = goog.require('os.data.ConfigDescriptor');
 const {isFileSystem} = goog.require('os.file');
 const LayerType = goog.require('os.layer.LayerType');
-const osMap = goog.require('os.map');
 const Request = goog.require('os.net.Request');
 const Icons = goog.require('os.ui.Icons');
 const BaseProvider = goog.require('os.ui.data.BaseProvider');
@@ -20,6 +18,7 @@ const DescriptorNode = goog.require('os.ui.data.DescriptorNode');
 const {directiveTag} = goog.require('os.ui.data.LayerCheckboxUI');
 const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer');
 const {getWorker, isElectron, MsgType, ID} = goog.require('plugin.geopackage');
+const {MIN_ZOOM, MAX_ZOOM} = goog.require('os.map');
 
 const GoogEvent = goog.requireType('goog.events.Event');
 const ITreeNode = goog.requireType('os.structs.ITreeNode');
@@ -250,19 +249,9 @@ class GeoPackageProvider extends AbstractLoadingServer {
       config['layerType'] = LayerType.TILES;
       config['icons'] = Icons.TILES;
 
-      const gpkgProjection = /** @type {string} */ (config['projection']);
-      const projection = gpkgProjection ? olProj.get(gpkgProjection) : undefined;
-
-      const resolutions = /** @type {Array<number>} */ (config['resolutions']);
-      if (projection && resolutions && resolutions.length) {
-        config['minZoom'] = Math.floor(osMap.resolutionToZoom(resolutions[0], projection));
-        config['maxZoom'] = Math.ceil(osMap.resolutionToZoom(resolutions[resolutions.length - 1], projection)) + 1;
-      } else {
-        const minZoom = config['minZoom'] != null ? config['minZoom'] : 0;
-        const maxZoom = config['maxZoom'] != null ? config['maxZoom'] : 0;
-        config['minZoom'] = Math.max(minZoom, 0);
-        config['maxZoom'] = Math.min(maxZoom, 42);
-      }
+      // we want the tiles to support the full zoom range, so set them regardless of what the file has configured
+      config['minZoom'] = MIN_ZOOM;
+      config['maxZoom'] = MAX_ZOOM;
     } else if (config['type'] === ID + '-vector') {
       const animate = config['dbColumns'].some((col) => col['type'] === 'datetime');
 
