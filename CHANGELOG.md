@@ -1,3 +1,11 @@
+## [1.6.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.6.0...v1.6.1) (2021-07-06)
+
+
+### Bug Fixes
+
+* **tiles:** only zoom to +4 zoom levels ([b7177c1](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/b7177c1a5a257568552e8b6b5debf78164f307ca))
+* **tiles:** use tile scaling to support gpkg tiles at all zooms ([b7097cb](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/b7097cb8cdce2c73cf5107b86319c61b7faccfd8))
+
 # [1.6.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.5.3...v1.6.0) (2021-07-02)
 
 
