@@ -109,8 +109,8 @@
     "semantic-release": "^15.13.32"
   },
   "dependencies": {
-    "@ngageoint/geopackage": "^4.0.0-beta.33",
-    "better-sqlite3": "7.1.2",
+    "@ngageoint/geopackage": "^4.0.0-beta.34",
+    "better-sqlite3": "7.4.1",
     "nan": "2.14.0",
     "opensphere": "0.0.0-development"
   },
