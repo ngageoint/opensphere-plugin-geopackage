@@ -350,7 +350,11 @@ var listDescriptors = function(msg) {
             var dataType = GeoPackage.GeoPackageDataType[col.dataType] || '';
             return /** @type {os.ogc.FeatureTypeColumn} */ ({
               type: dataType.toLowerCase(),
-              name: col.name
+              // iterateGeoJSONFeatures uses the displayName for the feature properties. if the gpkg has a
+              // gpkg_data_columns table, col.displayName may differ from col.name. if that table doesn't exist, these
+              // fields should be the same. the fallback to col.name is a sanity check, but shouldn't be needed in
+              // practice.
+              name: col.displayName || col.name
             });
           });
 
