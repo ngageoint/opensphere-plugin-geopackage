@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.6.1...v1.6.2) (2021-07-08)
+
+
+### Bug Fixes
+
+* **columns:** create source columns with the same name used by features ([9be0b94](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/9be0b94992da7f71e4ab0c2e0b13afc183ad39a7))
+
 ## [1.6.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.6.0...v1.6.1) (2021-07-06)
 
 
