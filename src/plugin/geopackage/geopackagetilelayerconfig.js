@@ -12,7 +12,7 @@ const TileGrid = goog.require('ol.tilegrid.TileGrid');
 const osMap = goog.require('os.map');
 const {EPSG4326} = goog.require('os.proj');
 const AbstractTileLayerConfig = goog.require('os.layer.config.AbstractTileLayerConfig');
-const {ID_DELIMITER} = goog.require('os.ui.data.BaseProvider');
+const BaseProvider = goog.require('os.ui.data.BaseProvider');
 const {MsgType, getWorker} = goog.require('plugin.geopackage');
 const Tile = goog.require('plugin.geopackage.Tile');
 
@@ -67,7 +67,7 @@ class TileLayerConfig extends AbstractTileLayerConfig {
    * @inheritDoc
    */
   getSource(options) {
-    const parts = options['id'].split(ID_DELIMITER);
+    const parts = options['id'].split(BaseProvider.ID_DELIMITER);
 
     const resolutions = /** @type {Array<number>|undefined} */ (options['resolutions']);
 
