@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.0...v1.7.1) (2021-07-19)
+
+
+### Bug Fixes
+
+* **tile:** don't destructure default exports ([7579fd3](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/7579fd373e4d20991e1ae406b375ee5b56113af7))
+
 # [1.7.0](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.6.2...v1.7.0) (2021-07-13)
 
 
