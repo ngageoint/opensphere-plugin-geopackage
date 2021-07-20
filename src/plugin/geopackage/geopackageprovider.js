@@ -9,6 +9,7 @@ const {makeSafe, intAwareCompare} = goog.require('goog.string');
 const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
 const AlertManager = goog.require('os.alert.AlertManager');
 const ConfigDescriptor = goog.require('os.data.ConfigDescriptor');
+const DataManager = goog.require('os.data.DataManager');
 const {isFileSystem} = goog.require('os.file');
 const LayerType = goog.require('os.layer.LayerType');
 const Request = goog.require('os.net.Request');
@@ -262,13 +263,15 @@ class GeoPackageProvider extends AbstractLoadingServer {
     }
 
     if (id) {
-      let descriptor = /** @type {ConfigDescriptor} */ (os.dataManager.getDescriptor(id));
+      const dataManager = DataManager.getInstance();
+
+      let descriptor = /** @type {ConfigDescriptor} */ (dataManager.getDescriptor(id));
       if (!descriptor) {
         descriptor = new ConfigDescriptor();
       }
 
       descriptor.setBaseConfig(config);
-      os.dataManager.addDescriptor(descriptor);
+      dataManager.addDescriptor(descriptor);
       descriptor.updateActiveFromTemp();
 
       const node = new DescriptorNode();
