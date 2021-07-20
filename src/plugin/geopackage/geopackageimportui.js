@@ -9,7 +9,7 @@ const GeoPackageProvider = goog.require('plugin.geopackage.GeoPackageProvider');
 const OSFile = goog.requireType('os.file.File');
 const geopackage = goog.require('plugin.geopackage');
 const windows = goog.require('os.ui.menu.windows');
-const {isLocal, FILE_URL_ENABLED} = goog.require('os.file');
+const {isLocal, isFileUrlEnabled} = goog.require('os.file');
 
 const DataProviderEvent = goog.requireType('os.data.DataProviderEvent');
 
@@ -22,7 +22,7 @@ class GeoPackageImportUI extends AbstractImportUI {
    */
   constructor() {
     super();
-    this.requiresStorage = !FILE_URL_ENABLED;
+    this.requiresStorage = !isFileUrlEnabled();
 
     /**
      * @type {OSFile}
