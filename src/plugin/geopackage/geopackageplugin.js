@@ -59,7 +59,7 @@ class GeoPackagePlugin extends AbstractPlugin {
     im.registerImportDetails('GeoPackage', true);
     im.registerImportUI(mime.TYPE, new GeoPackageImportUI);
 
-    os.dataManager.listen(DataProviderEventType.REMOVE_PROVIDER, this.onProviderRemove_, false, this);
+    dm.listen(DataProviderEventType.REMOVE_PROVIDER, this.onProviderRemove_, false, this);
   }
 
   /**

@@ -1,6 +1,5 @@
-// os.mock sets up a bunch of basic opensphere APIs, like settings, which are used in our plugin
-goog.require('os.mock');
 goog.require('plugin.geopackage.GeoPackagePlugin');
+goog.require('plugin.geopackage.mock');
 
 describe('plugin.geopackage.GeoPackagePlugin', function() {
   const GeoPackagePlugin = goog.module.get('plugin.geopackage.GeoPackagePlugin');
