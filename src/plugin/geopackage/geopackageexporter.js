@@ -46,6 +46,19 @@ const LOGGER = log.getLogger('plugin.geopackage.Exporter');
 
 
 /**
+ * Maps a column definition to an exportable column object.
+ * @param {ColumnDefinition} colDef
+ * @return {{field: string, type: string}}
+ */
+const mapColumnDefToColumn = (colDef) => {
+  return {
+    'field': colDef.field,
+    'type': colDef.type
+  };
+};
+
+
+/**
  * The GeoPackage exporter.
  * @extends {AbstractExporter<Feature>}
  */
@@ -264,7 +277,7 @@ class Exporter extends AbstractExporter {
         id: this.lastId,
         type: MsgType.EXPORT,
         command: ExportCommands.CREATE_TABLE,
-        columns: source.getColumns().map(Exporter.mapColumnDefToColumn),
+        columns: source.getColumns().map(mapColumnDefToColumn),
         tableName: tableName
       }));
       return;
@@ -310,17 +323,6 @@ class Exporter extends AbstractExporter {
     }
 
     return null;
-  }
-
-  /**
-   * @param {ColumnDefinition} colDef
-   * @return {{field: string, type: string}}
-   */
-  static mapColumnDefToColumn(colDef) {
-    return {
-      'field': colDef.field,
-      'type': colDef.type
-    };
   }
 }
 

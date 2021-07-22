@@ -33,8 +33,16 @@ class VectorLayerConfig extends GeoJSONLayerConfig {
   getLayer(source, options) {
     const layer = super.getLayer(source, options);
 
-    const featureType = new FeatureType(/** @type {string} */ (options['id']),
-        /** @type {Array<!FeatureTypeColumn>} */ (options['dbColumns']));
+    const id = /** @type {string} */ (options['id']);
+    const columns = /** @type {Array<!FeatureTypeColumn>} */ (options['dbColumns'].slice());
+    const featureType = new FeatureType(id, columns);
+
+    if (columns.find((col) => col['name'] == 'geometry')) {
+      // GPKG treats the geometry column as a special field that contains geometry blobs, but we can't show them.
+      // Set the geometry column name to filter that column out in the fixFeatureTypeColumns call below.
+      featureType.setGeometryColumnName('geometry');
+    }
+
     this.fixFeatureTypeColumns(layer, options, featureType);
     this.addMappings(layer, options, featureType);
 
