@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.1...v1.7.2) (2021-07-22)
+
+
+### Bug Fixes
+
+* **columns:** filters out empty geometry column ([649b319](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/649b31978890b15323e95166b2b8544b9017696e))
+
 ## [1.7.1](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.0...v1.7.1) (2021-07-19)
 
 
