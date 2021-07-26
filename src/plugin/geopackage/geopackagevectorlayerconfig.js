@@ -60,8 +60,8 @@ class VectorLayerConfig extends GeoJSONLayerConfig {
     const importer = /** @type {Importer} */ (source.getImporter());
 
     const execMappings = [];
-    const startField = featureType.getStartDateColumnName();
-    const endField = featureType.getEndDateColumnName();
+    const startField = featureType.getStartDateColumnName() || undefined;
+    const endField = featureType.getEndDateColumnName() || undefined;
 
     if (animate && startField) {
       if (startField != endField) {

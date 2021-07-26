@@ -52,8 +52,8 @@ const LOGGER = log.getLogger('plugin.geopackage.Exporter');
  */
 const mapColumnDefToColumn = (colDef) => {
   return {
-    'field': colDef.field,
-    'type': colDef.type
+    'field': colDef['field'],
+    'type': colDef['type']
   };
 };
 
