@@ -21,10 +21,38 @@ var MsgType = {
  */
 var isNode = false;
 
+
 /**
  * placeholder for library
  */
 var GeoPackage = null;
+
+
+/**
+ * Normalizes a longitude value to the given range
+ *
+ * @param {number} lon
+ * @param {number=} opt_min
+ * @param {number=} opt_max
+ * @return {number}
+ */
+const normalizeLongitude = function(lon, opt_min, opt_max) {
+  if (opt_min !== undefined && opt_max !== undefined) {
+    while (lon < opt_min) {
+      lon += 360;
+    }
+
+    while (lon > opt_max) {
+      lon -= 360;
+    }
+
+    return lon;
+  } else {
+    return lon > 180 ? ((lon + 180) % 360) - 180 :
+      lon < -180 ? ((lon - 180) % 360) + 180 :
+        lon;
+  }
+};
 
 
 /**
@@ -426,8 +454,14 @@ var getTile = function(msg) {
 
   try {
     var tileDao = gpkg.getTileDao(msg.tableName);
-    var bbox = new GeoPackage.BoundingBox(msg.extent[0], msg.extent[2], msg.extent[1], msg.extent[3]);
     var ret = new GeoPackage.GeoPackageTileRetriever(tileDao, msg.width, msg.height);
+    var extent = msg.extent.slice();
+
+    // the Geopackage lib doesn't like lat/lons outside of [-180, 180], so normalize the longitude values
+    // before constructing our bounding box for each tile
+    extent[0] = normalizeLongitude(extent[0]);
+    extent[2] = normalizeLongitude(extent[2]);
+    var bbox = new GeoPackage.BoundingBox(extent[0], extent[2], extent[1], extent[3]);
 
     // set the scaling for the layer on the retriever to ensure tiles come back outside the default range
     var tileScaling = tileScalingByTableName[msg.tableName];
@@ -751,6 +785,7 @@ var MsgCommands = {
   getFeatures: getFeatures,
   export: exportGpkg
 };
+
 
 /**
  * @param {Event|GeoPackageWorkerMessage} evt The message
