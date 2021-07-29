@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.3...v1.7.4) (2021-07-29)
+
+
+### Bug Fixes
+
+* **tiles:** enables and fixes tile world wrapping ([dd2e6d6](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/dd2e6d637ce58bc15d3976d3be67fd34e3ea6dfb))
+
 ## [1.7.3](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.2...v1.7.3) (2021-07-26)
 
 
