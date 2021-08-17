@@ -3,6 +3,7 @@ goog.module('plugin.geopackage.GeoPackageImportUI');
 const AbstractImportUI = goog.require('os.ui.im.AbstractImportUI');
 const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
 const AlertManager = goog.require('os.alert.AlertManager');
+const Settings = goog.require('os.config.Settings');
 const DataManager = goog.require('os.data.DataManager');
 const DataProviderEventType = goog.require('os.data.DataProviderEventType');
 const FileStorage = goog.require('os.file.FileStorage');
@@ -80,7 +81,7 @@ class GeoPackageImportUI extends AbstractImportUI {
     provider.setEditable(true);
     provider.load();
 
-    os.settings.set(['userProviders', provider.getId()], conf);
+    Settings.getInstance().set(['userProviders', provider.getId()], conf);
     DataManager.getInstance().addProvider(provider);
 
     AlertManager.getInstance().sendAlert(`${file.getFileName()} GeoPackage added!`, AlertEventSeverity.INFO);
