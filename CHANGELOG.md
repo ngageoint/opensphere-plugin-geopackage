@@ -1,3 +1,10 @@
+## [1.7.5](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.4...v1.7.5) (2021-08-18)
+
+
+### Bug Fixes
+
+* **import:** provide appropriate types to the compiler ([837d4e3](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/837d4e3726a4c168b758a7e6d741e778baac6cde))
+
 ## [1.7.4](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.3...v1.7.4) (2021-07-29)
 
 
