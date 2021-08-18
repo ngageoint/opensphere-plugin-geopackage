@@ -13,6 +13,7 @@ const windows = goog.require('os.ui.menu.windows');
 const {isLocal, isFileUrlEnabled} = goog.require('os.file');
 
 const DataProviderEvent = goog.requireType('os.data.DataProviderEvent');
+const DescriptorNode = goog.requireType('os.ui.data.DescriptorNode');
 
 
 /**
@@ -41,8 +42,8 @@ class GeoPackageImportUI extends AbstractImportUI {
       const url = file.getUrl();
 
       // see if there are any other geopackage providers for the same file
-      const list = DataManager.getInstance().getProviderRoot().getChildren()
-          .filter((provider) => provider instanceof GeoPackageProvider && provider.getUrl() === url);
+      const list = /** @type {!Array<!GeoPackageProvider>} */ (DataManager.getInstance().getProviderRoot().getChildren()
+          .filter((provider) => provider instanceof GeoPackageProvider && provider.getUrl() === url));
 
       if (list.length) {
         list.forEach((provider) => {
@@ -108,7 +109,7 @@ class GeoPackageImportUI extends AbstractImportUI {
    */
   onProviderLoaded(event) {
     const provider = /** @type {GeoPackageProvider} */ (event.target);
-    const children = provider.getChildren();
+    const children = /** @type {Array<DescriptorNode>} */ (provider.getChildren());
 
     if (children && children.length) {
       children.forEach((descriptorNode) => {
