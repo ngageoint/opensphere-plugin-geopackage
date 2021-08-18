@@ -12,6 +12,7 @@ const AbstractExporter = goog.require('os.ex.AbstractExporter');
 const osMap = goog.require('os.map');
 const {getMapContainer} = goog.require('os.map.instance');
 const {EPSG4326} = goog.require('os.proj');
+const ThreadProgressEvent = goog.require('os.thread.ThreadProgressEvent');
 const {getElectron, getWorker, ExportCommands, MsgType} = goog.require('plugin.geopackage');
 
 const Feature = goog.requireType('ol.Feature');
@@ -73,7 +74,6 @@ class Exporter extends AbstractExporter {
 
     /**
      * @type {number}
-     * @private
      */
     this.index_ = 0;
 
@@ -136,6 +136,13 @@ class Exporter extends AbstractExporter {
   /**
    * @inheritDoc
    */
+  supportsProgress() {
+    return true;
+  }
+
+  /**
+   * @inheritDoc
+   */
   reset() {
     super.reset();
 
@@ -182,29 +189,39 @@ class Exporter extends AbstractExporter {
           this.index_ = 0;
         } else if (msg.message.command === ExportCommands.CREATE_TABLE) {
           this.tables_[/** @type {!string} */ (msg.message.tableName)] = null;
-        } else if (msg.message.command === ExportCommands.GEOJSON) {
-          this.index_++;
         }
 
-        if (msg.message.command === ExportCommands.WRITE) {
+        if (msg.message.command === ExportCommands.GEOJSON) {
+          // the worker is done adding GeoJSON features to the geopackage
+          this.exportCommand(ExportCommands.WRITE);
+        } else if (msg.message.command === ExportCommands.PROGRESS) {
+          // fire a notification event of the current progress
+          const event = new ThreadProgressEvent(msg.message.count || 0, this.items.length);
+          this.dispatchEvent(event);
+        } else if (msg.message.command === ExportCommands.WRITE) {
+          // initiate getting file chunks from the worker
           this.output = [];
           this.exportCommand(ExportCommands.GET_CHUNK);
         } else if (msg.message.command === ExportCommands.GET_CHUNK) {
           if (msg.data instanceof ArrayBuffer) {
+            // we have the full ArrayBuffer, so finish the write
             this.output = msg.data;
             this.exportCommand(ExportCommands.WRITE_FINISH);
           } else if (msg.data && msg.data.length) {
+            // add the chunk and request the next chunk.
             this.output = this.output.concat(msg.data);
             this.exportCommand(ExportCommands.GET_CHUNK);
           } else {
+            // assume we're done
             this.exportCommand(ExportCommands.WRITE_FINISH);
           }
         } else if (msg.message.command === ExportCommands.WRITE_FINISH) {
+          // finish the write and fire off the complete event
           if (!(this.output instanceof ArrayBuffer)) {
             this.output = Uint8Array.from(/** @type {!Array<!number>} */ (this.output)).buffer;
           }
 
-          // remove it
+          // remove the temporary file used in Electron
           const electron = getElectron();
           if (electron) {
             electron.unlinkFile('tmp.gpkg', (err) => {
@@ -244,13 +261,8 @@ class Exporter extends AbstractExporter {
    */
   parseNext_() {
     const worker = getWorker();
-
-    if (this.index_ === this.items.length) {
-      this.exportCommand(ExportCommands.WRITE);
-      return;
-    }
-
-    const feature = this.items[this.index_];
+    const features = this.items;
+    const feature = features[0];
     const source = this.getSource_(feature);
     if (!source) {
       this.reportError_(`Could not determine source for ${feature.getId()}`);
@@ -283,22 +295,28 @@ class Exporter extends AbstractExporter {
       return;
     }
 
-    const geojson = this.format.writeFeatureObject(feature, {
+    const geojson = this.format.writeFeaturesObject(features, {
       featureProjection: osMap.PROJECTION,
       dataProjection: EPSG4326,
       fields: this.fields
     });
 
-    const props = geojson['properties'];
+    const geojsonFeatures = geojson.features;
+    geojsonFeatures.forEach((geojsonFeature, i) => {
+      const props = geojsonFeature['properties'];
+      const feature = features[i];
+      const itime = feature.get(RecordField.TIME);
+      if (itime) {
+        props[RECORD_TIME_START_FIELD] = new Date(itime.getStart()).toISOString();
 
-    const itime = feature.get(RecordField.TIME);
-    if (itime) {
-      props[RECORD_TIME_START_FIELD] = new Date(itime.getStart()).toISOString();
-
-      if (itime instanceof os.time.TimeRange) {
-        props[RECORD_TIME_STOP_FIELD] = new Date(itime.getEnd()).toISOString();
+        if (itime instanceof os.time.TimeRange) {
+          props[RECORD_TIME_STOP_FIELD] = new Date(itime.getEnd()).toISOString();
+        }
       }
-    }
+    });
+
+    const event = new ThreadProgressEvent(0.1 * this.items.length, this.items.length);
+    this.dispatchEvent(event);
 
     worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
       id: this.lastId,

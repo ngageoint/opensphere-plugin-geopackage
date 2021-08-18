@@ -54,7 +54,8 @@ exports.ExportCommands = {
   GEOJSON: 'geojson',
   WRITE: 'write',
   GET_CHUNK: 'getChunk',
-  WRITE_FINISH: 'writeFinish'
+  WRITE_FINISH: 'writeFinish',
+  PROGRESS: 'progress'
 };
 
 

@@ -622,19 +622,40 @@ var exportGeoJSON = function(msg) {
 
   try {
     var geojson = msg.data;
-    var props = geojson.properties;
+    var features = geojson.features;
 
-    // time start and stop are ISO8601 strings, and the new API needs dates
-    if ('TIME_START' in props) {
-      props.TIME_START = new Date(Date.parse(props.TIME_START));
-    }
+    features.forEach((feature) => {
+      var props = feature.properties;
 
-    if ('TIME_STOP' in props) {
-      props.TIME_STOP = new Date(Date.parse(props.TIME_STOP));
-    }
+      // time start and stop are ISO8601 strings, and the new API needs dates
+      if ('TIME_START' in props) {
+        props.TIME_START = new Date(Date.parse(props.TIME_START));
+      }
 
-    gpkg.addGeoJSONFeatureToGeoPackage(geojson, msg.tableName);
-    success(msg);
+      if ('TIME_STOP' in props) {
+        props.TIME_STOP = new Date(Date.parse(props.TIME_STOP));
+      }
+    });
+
+    /**
+     * Progress callback function for updating the UI with the current parse count.
+     * @param {number} count Current parse count.
+     */
+    var progressFn = (count) => {
+      // post a progress message with the current count
+      success(/** @type {GeoPackageWorkerMessage} */ ({
+        id: msg.id,
+        type: msg.type,
+        command: 'progress',
+        count
+      }));
+    };
+
+    gpkg.addGeoJSONFeaturesToGeoPackage(features, msg.tableName, false, 10000, progressFn).then((numAdded) => {
+      success(msg);
+    }, (reason) => {
+      handleError(reason, msg);
+    });
   } catch (e) {
     handleError(e, msg);
   }
