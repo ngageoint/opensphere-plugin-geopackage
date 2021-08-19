@@ -647,6 +647,7 @@ var exportGeoJSON = function(msg) {
         id: msg.id,
         type: msg.type,
         command: 'progress',
+        tableName: msg.tableName,
         count
       }));
     };
