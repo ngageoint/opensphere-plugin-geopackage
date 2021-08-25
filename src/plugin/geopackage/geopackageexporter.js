@@ -1,5 +1,6 @@
 goog.module('plugin.geopackage.Exporter');
 
+const {bucket} = goog.require('goog.array');
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
 const GeoJSON = goog.require('ol.format.GeoJSON');
@@ -12,6 +13,7 @@ const AbstractExporter = goog.require('os.ex.AbstractExporter');
 const osMap = goog.require('os.map');
 const {getMapContainer} = goog.require('os.map.instance');
 const {EPSG4326} = goog.require('os.proj');
+const ThreadProgressEvent = goog.require('os.thread.ThreadProgressEvent');
 const {getElectron, getWorker, ExportCommands, MsgType} = goog.require('plugin.geopackage');
 
 const Feature = goog.requireType('ol.Feature');
@@ -72,24 +74,28 @@ class Exporter extends AbstractExporter {
     this.format = new GeoJSON();
 
     /**
-     * @type {number}
-     * @private
-     */
-    this.index_ = 0;
-
-    /**
-     * @type {!Object<string, null>}
-     * @private
-     */
-    this.tables_ = {};
-
-    /**
+     * Map of Source IDs to tableNames.
      * @type {!Object<string, string>}
      * @private
      */
     this.idsToTables_ = {};
 
     /**
+     * Map of features to the tableName they will be exported to.
+     * @type {!Object<string, Array<Feature>>}
+     * @private
+     */
+    this.tablesToFeatures_ = {};
+
+    /**
+     * Map to track how many features have been exported of each type.
+     * @type {Object<string, number>}
+     * @private
+     */
+    this.tablesToExported_ = {};
+
+    /**
+     * ID of the exporter. Used to ensure the exporter handles the right worker messages.
      * @type {string}
      * @protected
      */
@@ -136,10 +142,16 @@ class Exporter extends AbstractExporter {
   /**
    * @inheritDoc
    */
+  supportsProgress() {
+    return true;
+  }
+
+  /**
+   * @inheritDoc
+   */
   reset() {
     super.reset();
 
-    this.tables_ = {};
     this.idsToTables_ = {};
     exporterId++;
 
@@ -170,6 +182,7 @@ class Exporter extends AbstractExporter {
   }
 
   /**
+   * Receives export messages from the worker and handles them
    * @param {Event|GeoPackageWorkerResponse} e
    * @protected
    */
@@ -179,32 +192,54 @@ class Exporter extends AbstractExporter {
     if (msg && msg.message.id === this.lastId && msg.message.type === MsgType.EXPORT) {
       if (msg.type === MsgType.SUCCESS) {
         if (msg.message.command === ExportCommands.CREATE) {
-          this.index_ = 0;
+          // start by bucketing the features by tableName and creating the tables
+          this.bucketFeatures_();
         } else if (msg.message.command === ExportCommands.CREATE_TABLE) {
-          this.tables_[/** @type {!string} */ (msg.message.tableName)] = null;
+          const tableName = /** @type {!string} */ (msg.message.tableName);
+          this.parse_(this.tablesToFeatures_[tableName], tableName);
         } else if (msg.message.command === ExportCommands.GEOJSON) {
-          this.index_++;
-        }
+          // this will receive one message per tableName, so to remove the features that were parsed
+          delete this.tablesToFeatures_[/** @type {!string} */ (msg.message.tableName)];
 
-        if (msg.message.command === ExportCommands.WRITE) {
+          if (Object.keys(this.tablesToFeatures_).length == 0) {
+            // the worker has parsed all the features for each table, so send the write command to finish up
+            this.exportCommand(ExportCommands.WRITE);
+          }
+        } else if (msg.message.command === ExportCommands.PROGRESS) {
+          // count up the features by table and fire a notification event of the current progress
+          const tableName = /** @type {!string} */ (msg.message.tableName);
+          const count = /** @type {!number} */ (msg.message.count);
+
+          this.tablesToExported_[tableName] = count;
+
+          const exported = Object.values(this.tablesToExported_).reduce((acc, val) => acc + val, 0);
+          const event = new ThreadProgressEvent(exported, this.items.length);
+
+          this.dispatchEvent(event);
+        } else if (msg.message.command === ExportCommands.WRITE) {
+          // initiate getting file chunks from the worker
           this.output = [];
           this.exportCommand(ExportCommands.GET_CHUNK);
         } else if (msg.message.command === ExportCommands.GET_CHUNK) {
           if (msg.data instanceof ArrayBuffer) {
+            // we have the full ArrayBuffer, so finish the write
             this.output = msg.data;
             this.exportCommand(ExportCommands.WRITE_FINISH);
           } else if (msg.data && msg.data.length) {
+            // add the chunk and request the next chunk.
             this.output = this.output.concat(msg.data);
             this.exportCommand(ExportCommands.GET_CHUNK);
           } else {
+            // assume we're done
             this.exportCommand(ExportCommands.WRITE_FINISH);
           }
         } else if (msg.message.command === ExportCommands.WRITE_FINISH) {
+          // finish the write and fire off the complete event
           if (!(this.output instanceof ArrayBuffer)) {
             this.output = Uint8Array.from(/** @type {!Array<!number>} */ (this.output)).buffer;
           }
 
-          // remove it
+          // remove the temporary file used in Electron
           const electron = getElectron();
           if (electron) {
             electron.unlinkFile('tmp.gpkg', (err) => {
@@ -217,8 +252,6 @@ class Exporter extends AbstractExporter {
           }
 
           this.dispatchEvent(OSEventType.COMPLETE);
-        } else {
-          this.parseNext_();
         }
       } else {
         this.reportError_(`GeoPackage creation failed! ${msg.reason}`);
@@ -227,6 +260,7 @@ class Exporter extends AbstractExporter {
   }
 
   /**
+   * Sends an export command to the worker to tell it to begin a task.
    * @param {ExportCommands} cmd
    * @protected
    */
@@ -240,65 +274,80 @@ class Exporter extends AbstractExporter {
   }
 
   /**
+   * Buckets the features by tableName and posts messages to the worker to create each table.
    * @private
    */
-  parseNext_() {
+  bucketFeatures_() {
+    const worker = getWorker();
+    const tables = {};
+
+    this.tablesToFeatures_ = bucket(this.items, (feature) => {
+      const source = this.getSource_(feature);
+      if (!source) {
+        this.reportError_(`Could not determine source for ${feature.getId()}`);
+        return;
+      }
+
+      const id = source.getId();
+      let tableName;
+
+      if (id in this.idsToTables_) {
+        tableName = this.idsToTables_[id];
+      } else {
+        tableName = /** @type {!ILayer} */ (getMapContainer().getLayer(id)).getTitle();
+        this.idsToTables_[id] = tableName;
+
+        if (!(tableName in tables)) {
+          tables[tableName] = null;
+
+          // fire off a create table message
+          worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+            id: this.lastId,
+            type: MsgType.EXPORT,
+            command: ExportCommands.CREATE_TABLE,
+            columns: source.getColumns().map(mapColumnDefToColumn),
+            tableName: tableName
+          }));
+        }
+      }
+
+      return tableName;
+    });
+  }
+
+  /**
+   * Parses an array of features that represent one table within the GeoPackage.
+   * @param {Array<Feature>} features The features to parse.
+   * @param {string} tableName The tableName to add them to.
+   * @private
+   */
+  parse_(features, tableName) {
     const worker = getWorker();
 
-    if (this.index_ === this.items.length) {
-      this.exportCommand(ExportCommands.WRITE);
-      return;
-    }
-
-    const feature = this.items[this.index_];
-    const source = this.getSource_(feature);
-    if (!source) {
-      this.reportError_(`Could not determine source for ${feature.getId()}`);
-      return;
-    }
-
-    const id = source.getId();
-    let tableName;
-
-    if (id in this.idsToTables_) {
-      tableName = this.idsToTables_[id];
-    } else {
-      tableName = /** @type {!ILayer} */ (getMapContainer().getLayer(id)).getTitle();
-      this.idsToTables_[id] = tableName;
-    }
-
-    if (!tableName) {
-      this.reportError_(`Could not determine table name for ${feature.getId()}`);
-      return;
-    }
-
-    if (!(tableName in this.tables_)) {
-      worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-        id: this.lastId,
-        type: MsgType.EXPORT,
-        command: ExportCommands.CREATE_TABLE,
-        columns: source.getColumns().map(mapColumnDefToColumn),
-        tableName: tableName
-      }));
-      return;
-    }
-
-    const geojson = this.format.writeFeatureObject(feature, {
+    const geojson = this.format.writeFeaturesObject(features, {
       featureProjection: osMap.PROJECTION,
       dataProjection: EPSG4326,
       fields: this.fields
     });
 
-    const props = geojson['properties'];
+    const geojsonFeatures = geojson.features;
+    geojsonFeatures.forEach((geojsonFeature, i) => {
+      const props = geojsonFeature['properties'];
+      const feature = features[i];
+      const itime = feature.get(RecordField.TIME);
+      if (itime) {
+        props[RECORD_TIME_START_FIELD] = new Date(itime.getStart()).toISOString();
 
-    const itime = feature.get(RecordField.TIME);
-    if (itime) {
-      props[RECORD_TIME_START_FIELD] = new Date(itime.getStart()).toISOString();
-
-      if (itime instanceof os.time.TimeRange) {
-        props[RECORD_TIME_STOP_FIELD] = new Date(itime.getEnd()).toISOString();
+        if (itime instanceof os.time.TimeRange) {
+          props[RECORD_TIME_STOP_FIELD] = new Date(itime.getEnd()).toISOString();
+        }
       }
-    }
+    });
+
+    // fire an initial progress event
+    const start = Math.min(0.1, 10000 / this.items.length);
+    const event = new ThreadProgressEvent(start, this.items.length);
+    this.dispatchEvent(event);
 
     worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
       id: this.lastId,

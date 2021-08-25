@@ -19,7 +19,8 @@
  *  width: (number|undefined),
  *  zoom: (number|undefined),
  *  columns: ({field: string, type: string}|undefined),
- *  command: (string|undefined)
+ *  command: (string|undefined),
+ *  count: (number|undefined)
  * }}
  */
 var GeoPackageWorkerMessage;
