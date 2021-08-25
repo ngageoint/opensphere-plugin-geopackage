@@ -1,3 +1,10 @@
+## [1.7.6](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.5...v1.7.6) (2021-08-25)
+
+
+### Bug Fixes
+
+* **export:** support bulk export from multiple sources ([4b7b66c](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/4b7b66cee03ae7828b0bbd84ea007a917b9571b3))
+
 ## [1.7.5](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.4...v1.7.5) (2021-08-18)
 
 
