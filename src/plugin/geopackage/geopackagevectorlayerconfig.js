@@ -1,4 +1,4 @@
-goog.module('plugin.geopackage.VectorLayerConfig');
+goog.declareModuleId('plugin.geopackage.VectorLayerConfig');
 
 const AltMapping = goog.require('os.im.mapping.AltMapping');
 const RadiusMapping = goog.require('os.im.mapping.RadiusMapping');
@@ -19,7 +19,7 @@ const Request = goog.requireType('os.source.Request');
 
 /**
  */
-class VectorLayerConfig extends GeoJSONLayerConfig {
+export class VectorLayerConfig extends GeoJSONLayerConfig {
   /**
    * Constructor.
    */
@@ -100,5 +100,3 @@ class VectorLayerConfig extends GeoJSONLayerConfig {
     ]);
   }
 }
-
-exports = VectorLayerConfig;

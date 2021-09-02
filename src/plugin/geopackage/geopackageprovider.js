@@ -1,4 +1,7 @@
-goog.module('plugin.geopackage.GeoPackageProvider');
+goog.declareModuleId('plugin.geopackage.GeoPackageProvider');
+
+import {getWorker, isElectron, MsgType, ID} from './geopackage.js';
+import {MIN_ZOOM, MAX_ZOOM} from 'opensphere/src/os/map/map.js';
 
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
@@ -18,8 +21,6 @@ const BaseProvider = goog.require('os.ui.data.BaseProvider');
 const DescriptorNode = goog.require('os.ui.data.DescriptorNode');
 const {directiveTag} = goog.require('os.ui.data.LayerCheckboxUI');
 const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer');
-const {getWorker, isElectron, MsgType, ID} = goog.require('plugin.geopackage');
-const {MIN_ZOOM, MAX_ZOOM} = goog.require('os.map');
 
 const GoogEvent = goog.requireType('goog.events.Event');
 const ITreeNode = goog.requireType('os.structs.ITreeNode');
@@ -43,7 +44,7 @@ const labelSort = (a, b) => intAwareCompare(a.getLabel() || '', b.getLabel() || 
 /**
  * GeoPackage provider
  */
-class GeoPackageProvider extends AbstractLoadingServer {
+export class GeoPackageProvider extends AbstractLoadingServer {
   /**
    * Constructor.
    */
@@ -281,5 +282,3 @@ class GeoPackageProvider extends AbstractLoadingServer {
     }
   }
 }
-
-exports = GeoPackageProvider;

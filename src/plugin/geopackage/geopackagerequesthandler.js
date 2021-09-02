@@ -1,10 +1,11 @@
-goog.module('plugin.geopackage.RequestHandler');
+goog.declareModuleId('plugin.geopackage.RequestHandler');
+
+import {getWorker, MsgType, ID} from './geopackage.js';
 
 const EventTarget = goog.require('goog.events.EventTarget');
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
 const NetEventType = goog.require('goog.net.EventType');
-const {getWorker, MsgType, ID} = goog.require('plugin.geopackage');
 
 const Logger = goog.requireType('goog.log.Logger');
 const IRequestHandler = goog.requireType('os.net.IRequestHandler');
@@ -20,7 +21,7 @@ const LOGGER = log.getLogger('plugin.geopackage.RequestHandler');
 /**
  * @implements {IRequestHandler}
  */
-class RequestHandler extends EventTarget {
+export class RequestHandler extends EventTarget {
   /**
    * Constructor.
    */
@@ -208,6 +209,3 @@ class RequestHandler extends EventTarget {
     }
   }
 }
-
-
-exports = RequestHandler;

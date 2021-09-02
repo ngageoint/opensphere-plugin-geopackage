@@ -2,7 +2,7 @@ goog.require('plugin.geopackage.GeoPackageProvider');
 
 
 describe('plugin.geopackage.GeoPackageProvider', function() {
-  const GeoPackageProvider = goog.module.get('plugin.geopackage.GeoPackageProvider');
+  const {GeoPackageProvider} = goog.module.get('plugin.geopackage.GeoPackageProvider');
 
   const baseUrl = '/base/test/resources/geopackage/';
 

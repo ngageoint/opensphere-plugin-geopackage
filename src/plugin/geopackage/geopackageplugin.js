@@ -1,4 +1,13 @@
-goog.module('plugin.geopackage.GeoPackagePlugin');
+goog.declareModuleId('plugin.geopackage.GeoPackagePlugin');
+
+import {ID} from './geopackage.js';
+import {Exporter} from './geopackageexporter.js';
+import {GeoPackageImportUI} from './geopackageimportui.js';
+import {GeoPackageProvider} from './geopackageprovider.js';
+import {RequestHandler} from './geopackagerequesthandler.js';
+import {TileLayerConfig} from './geopackagetilelayerconfig.js';
+import {VectorLayerConfig} from './geopackagevectorlayerconfig.js';
+import {TYPE} from './mime.js';
 
 const DataManager = goog.require('os.data.DataManager');
 const DataProviderEventType = goog.require('os.data.DataProviderEventType');
@@ -11,26 +20,18 @@ const AbstractPlugin = goog.require('os.plugin.AbstractPlugin');
 const PluginManager = goog.require('os.plugin.PluginManager');
 const ImportManager = goog.require('os.ui.im.ImportManager');
 const exportManager = goog.require('os.ui.exportManager');
-const geopackage = goog.require('plugin.geopackage');
-const Exporter = goog.require('plugin.geopackage.Exporter');
-const GeoPackageImportUI = goog.require('plugin.geopackage.GeoPackageImportUI');
-const GeoPackageProvider = goog.require('plugin.geopackage.GeoPackageProvider');
-const RequestHandler = goog.require('plugin.geopackage.RequestHandler');
-const TileLayerConfig = goog.require('plugin.geopackage.TileLayerConfig');
-const VectorLayerConfig = goog.require('plugin.geopackage.VectorLayerConfig');
-const mime = goog.require('plugin.geopackage.mime');
 
 
 /**
  * Provides support for GeoPackage vector files
  */
-class GeoPackagePlugin extends AbstractPlugin {
+export class GeoPackagePlugin extends AbstractPlugin {
   /**
    * Constructor.
    */
   constructor() {
     super();
-    this.id = geopackage.ID;
+    this.id = ID;
     this.errorMessage = null;
   }
 
@@ -41,14 +42,14 @@ class GeoPackagePlugin extends AbstractPlugin {
     // register geopackage provider type
     const dm = DataManager.getInstance();
     dm.registerProviderType(new ProviderEntry(
-        geopackage.ID,
+        ID,
         GeoPackageProvider,
         'GeoPackage File',
         'Provides raster and vector data in a single file format'));
 
     const lcm = LayerConfigManager.getInstance();
-    lcm.registerLayerConfig(geopackage.ID + '-tile', TileLayerConfig);
-    lcm.registerLayerConfig(geopackage.ID + '-vector', VectorLayerConfig);
+    lcm.registerLayerConfig(ID + '-tile', TileLayerConfig);
+    lcm.registerLayerConfig(ID + '-vector', VectorLayerConfig);
 
     RequestHandlerFactory.addHandler(RequestHandler);
 
@@ -57,7 +58,7 @@ class GeoPackagePlugin extends AbstractPlugin {
 
     const im = ImportManager.getInstance();
     im.registerImportDetails('GeoPackage', true);
-    im.registerImportUI(mime.TYPE, new GeoPackageImportUI);
+    im.registerImportUI(TYPE, new GeoPackageImportUI);
 
     dm.listen(DataProviderEventType.REMOVE_PROVIDER, this.onProviderRemove_, false, this);
   }
@@ -78,5 +79,3 @@ class GeoPackagePlugin extends AbstractPlugin {
 
 // add the plugin to the application
 PluginManager.getInstance().addPlugin(new GeoPackagePlugin());
-
-exports = GeoPackagePlugin;

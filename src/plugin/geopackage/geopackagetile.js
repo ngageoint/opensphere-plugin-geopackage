@@ -1,4 +1,4 @@
-goog.module('plugin.geopackage.Tile');
+goog.declareModuleId('plugin.geopackage.Tile');
 
 const ColorableTile = goog.require('os.tile.ColorableTile');
 
@@ -6,7 +6,7 @@ const ColorableTile = goog.require('os.tile.ColorableTile');
 /**
  * Implementation of a tile that is colorable.
  */
-class Tile extends ColorableTile {
+export class Tile extends ColorableTile {
   /**
    * Constructor.
    * @param {ol.TileCoord} tileCoord Tile coordinate.
@@ -31,5 +31,3 @@ class Tile extends ColorableTile {
     super.disposeInternal();
   }
 }
-
-exports = Tile;

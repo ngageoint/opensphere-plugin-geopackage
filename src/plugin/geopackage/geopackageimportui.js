@@ -1,4 +1,7 @@
-goog.module('plugin.geopackage.GeoPackageImportUI');
+goog.declareModuleId('plugin.geopackage.GeoPackageImportUI');
+
+import {ID} from './geopackage.js';
+import {GeoPackageProvider} from './geopackageprovider.js';
 
 const AbstractImportUI = goog.require('os.ui.im.AbstractImportUI');
 const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
@@ -7,9 +10,7 @@ const Settings = goog.require('os.config.Settings');
 const DataManager = goog.require('os.data.DataManager');
 const DataProviderEventType = goog.require('os.data.DataProviderEventType');
 const FileStorage = goog.require('os.file.FileStorage');
-const GeoPackageProvider = goog.require('plugin.geopackage.GeoPackageProvider');
 const OSFile = goog.requireType('os.file.File');
-const geopackage = goog.require('plugin.geopackage');
 const windows = goog.require('os.ui.menu.windows');
 const {isLocal, isFileUrlEnabled} = goog.require('os.file');
 
@@ -19,7 +20,7 @@ const DescriptorNode = goog.requireType('os.ui.data.DescriptorNode');
 
 /**
  */
-class GeoPackageImportUI extends AbstractImportUI {
+export class GeoPackageImportUI extends AbstractImportUI {
   /**
    * Constructor.
    */
@@ -69,7 +70,7 @@ class GeoPackageImportUI extends AbstractImportUI {
   onFileReady(opt_config) {
     const file = this.file;
     const conf = {
-      'type': geopackage.ID,
+      'type': ID,
       'label': file.getFileName(),
       'url': file.getUrl()
     };
@@ -119,5 +120,3 @@ class GeoPackageImportUI extends AbstractImportUI {
     }
   }
 }
-
-exports = GeoPackageImportUI;

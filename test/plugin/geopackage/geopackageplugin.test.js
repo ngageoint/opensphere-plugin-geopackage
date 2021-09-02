@@ -2,7 +2,7 @@ goog.require('plugin.geopackage.GeoPackagePlugin');
 goog.require('plugin.geopackage.mock');
 
 describe('plugin.geopackage.GeoPackagePlugin', function() {
-  const GeoPackagePlugin = goog.module.get('plugin.geopackage.GeoPackagePlugin');
+  const {GeoPackagePlugin} = goog.module.get('plugin.geopackage.GeoPackagePlugin');
 
   it('should have the proper ID', function() {
     expect(new GeoPackagePlugin().id).toBe('geopackage');
