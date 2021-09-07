@@ -1,4 +1,4 @@
-goog.module('plugin.geopackage');
+goog.declareModuleId('plugin.geopackage');
 
 const log = goog.require('goog.log');
 
@@ -8,23 +8,22 @@ const Logger = goog.requireType('goog.log.Logger');
 /**
  * @define {string}
  */
-exports.ROOT = goog.define('plugin.geopackage.ROOT', '../opensphere-plugin-geopackage/');
+export const ROOT = goog.define('plugin.geopackage.ROOT', '../opensphere-plugin-geopackage/');
 
 /**
  * @define {string}
  */
-exports.GPKG_PATH = goog.define('plugin.geopackage.GPKG_PATH', 'vendor/geopackage/geopackage.min.js');
+export const GPKG_PATH = goog.define('plugin.geopackage.GPKG_PATH', 'vendor/geopackage/geopackage.min.js');
 
 /**
  * @type {string}
  * @const
  */
-exports.ID = 'geopackage';
+export const ID = 'geopackage';
 
 
 /**
  * The logger.
- * @const
  * @type {Logger}
  */
 const LOGGER = log.getLogger('plugin.geopackage');
@@ -33,7 +32,7 @@ const LOGGER = log.getLogger('plugin.geopackage');
 /**
  * @enum {string}
  */
-exports.MsgType = {
+export const MsgType = {
   OPEN_LIBRARY: 'openLibrary',
   OPEN: 'open',
   CLOSE: 'close',
@@ -48,7 +47,7 @@ exports.MsgType = {
 /**
  * @enum {string}
  */
-exports.ExportCommands = {
+export const ExportCommands = {
   CREATE: 'create',
   CREATE_TABLE: 'createTable',
   GEOJSON: 'geojson',
@@ -62,14 +61,14 @@ exports.ExportCommands = {
 /**
  * @type {?Worker}
  */
-let worker_ = null;
+let worker = null;
 
 
 /**
  * Get the Electron preload exports.
  * @return {Object|undefined}
  */
-exports.getElectron = () => {
+export const getElectron = () => {
   return window.ElectronGpkg || undefined;
 };
 
@@ -78,19 +77,19 @@ exports.getElectron = () => {
  * If the app is running within Electron.
  * @return {boolean}
  */
-exports.isElectron = () => {
-  return !!exports.getElectron();
+export const isElectron = () => {
+  return !!getElectron();
 };
 
 
 /**
  * @return {!Worker} The GeoPackage worker
  */
-exports.getWorker = () => {
-  if (!worker_) {
-    let src = exports.ROOT + 'src/worker/gpkg.worker.js';
+export const getWorker = () => {
+  if (!worker) {
+    let src = ROOT + 'src/worker/gpkg.worker.js';
 
-    const electron = exports.getElectron();
+    const electron = getElectron();
     if (electron) {
       // The node context (as opposed to the electron browser context), loads
       // paths relative to process.cwd(). Therefore, we need to make our source
@@ -121,18 +120,18 @@ exports.getWorker = () => {
       // DEBUG VERSION! Do not commit next line uncommented
       // options['execArgv'] = ['--inspect-brk'];
 
-      worker_ = (electron.forkProcess(src, [], options));
+      worker = (electron.forkProcess(src, [], options));
 
       log.info(LOGGER, 'GeoPackage worker configured via node child process');
     } else {
-      worker_ = new Worker(src);
-      worker_.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
-        type: exports.MsgType.OPEN_LIBRARY,
-        url: (!exports.GPKG_PATH.startsWith('/') ? '../../' : '') + exports.GPKG_PATH
+      worker = new Worker(src);
+      worker.postMessage(/** @type {GeoPackageWorkerMessage} */ ({
+        type: MsgType.OPEN_LIBRARY,
+        url: (!GPKG_PATH.startsWith('/') ? '../../' : '') + GPKG_PATH
       }));
       log.info(LOGGER, 'GeoPackage worker configured via web worker');
     }
   }
 
-  return worker_;
+  return worker;
 };

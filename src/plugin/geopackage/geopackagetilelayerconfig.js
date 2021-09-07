@@ -1,4 +1,8 @@
-goog.module('plugin.geopackage.TileLayerConfig');
+goog.declareModuleId('plugin.geopackage.TileLayerConfig');
+
+import {PROJECTION} from 'opensphere/src/os/map/map.js';
+import {MsgType, getWorker} from './geopackage.js';
+import {Tile} from './geopackagetile.js';
 
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
@@ -9,12 +13,9 @@ const {transformExtent} = goog.require('ol.proj');
 const TileImage = goog.require('ol.source.TileImage');
 const {createForProjection} = goog.require('ol.tilegrid');
 const TileGrid = goog.require('ol.tilegrid.TileGrid');
-const osMap = goog.require('os.map');
 const {EPSG4326} = goog.require('os.proj');
 const AbstractTileLayerConfig = goog.require('os.layer.config.AbstractTileLayerConfig');
 const BaseProvider = goog.require('os.ui.data.BaseProvider');
-const {MsgType, getWorker} = goog.require('plugin.geopackage');
-const Tile = goog.require('plugin.geopackage.Tile');
 
 const Projection = goog.requireType('ol.proj.Projection');
 
@@ -41,7 +42,7 @@ const tiles = {};
 /**
  * Creates a tile layer from a GeoPackage.
  */
-class TileLayerConfig extends AbstractTileLayerConfig {
+export class TileLayerConfig extends AbstractTileLayerConfig {
   /**
    * Constructor.
    */
@@ -78,7 +79,7 @@ class TileLayerConfig extends AbstractTileLayerConfig {
       'tileSizes': options['tileSizes']
     }));
 
-    const layerTileGrid = createForProjection(osMap.PROJECTION, DEFAULT_MAX_ZOOM, [256, 256]);
+    const layerTileGrid = createForProjection(PROJECTION, DEFAULT_MAX_ZOOM, [256, 256]);
 
     const source = new TileImage(/** @type {olx.source.TileImageOptions} */ ({
       'projection': this.projection,
@@ -117,7 +118,7 @@ const getTileLoadFunction = (providerId, gpkgTileGrid, tileGrid) => (
     if (layerName) {
       const tileCoord = imageTile.getTileCoord();
       let extent = tileGrid.getTileCoordExtent(tileCoord);
-      extent = transformExtent(extent, osMap.PROJECTION, EPSG4326);
+      extent = transformExtent(extent, PROJECTION, EPSG4326);
       const layerResolution = tileGrid.getResolution(tileCoord[0]);
       const gpkgZoom = gpkgTileGrid.getZForResolution(layerResolution);
       const size = tileGrid.getTileSize(tileCoord[0]);
@@ -126,7 +127,7 @@ const getTileLoadFunction = (providerId, gpkgTileGrid, tileGrid) => (
         id: providerId,
         type: MsgType.GET_TILE,
         tableName: layerName,
-        projection: osMap.PROJECTION.getCode(),
+        projection: PROJECTION.getCode(),
         extent: extent,
         zoom: gpkgZoom,
         width: size[0],
@@ -206,5 +207,3 @@ const getTileUrlFunction = (layerName) => (
    */
   (tileCoord, pixelRatio, projection) => layerName
 );
-
-exports = TileLayerConfig;

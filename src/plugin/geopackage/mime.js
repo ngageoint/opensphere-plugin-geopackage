@@ -1,17 +1,15 @@
-goog.module('plugin.geopackage.mime');
+goog.declareModuleId('plugin.geopackage.mime');
 
 const Promise = goog.require('goog.Promise');
-const mime = goog.require('os.file.mime');
+const {register} = goog.require('os.file.mime');
 
 const OSFile = goog.requireType('os.file.File');
 
 
 /**
  * @type {string}
- * @const
  */
-exports.TYPE = 'application/vnd.opengeospatial.geopackage+sqlite3';
-
+export const TYPE = 'application/vnd.opengeospatial.geopackage+sqlite3';
 
 /**
  * @param {ArrayBuffer} buffer
@@ -19,7 +17,7 @@ exports.TYPE = 'application/vnd.opengeospatial.geopackage+sqlite3';
  * @param {*=} opt_context
  * @return {!Promise<*|undefined>}
  */
-exports.detect = (buffer, file, opt_context) => {
+export const detect = (buffer, file, opt_context) => {
   let retVal = false;
 
   const str = 'SQLite format 3';
@@ -32,5 +30,4 @@ exports.detect = (buffer, file, opt_context) => {
   return /** @type {!Promise<*|undefined>} */ (Promise.resolve(retVal));
 };
 
-
-mime.register(exports.TYPE, exports.detect);
+register(TYPE, detect);

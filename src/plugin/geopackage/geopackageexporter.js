@@ -1,4 +1,7 @@
-goog.module('plugin.geopackage.Exporter');
+goog.declareModuleId('plugin.geopackage.Exporter');
+
+import {PROJECTION} from 'opensphere/src/os/map/map.js';
+import {getElectron, getWorker, ExportCommands, MsgType} from './geopackage.js';
 
 const {bucket} = goog.require('goog.array');
 const GoogEventType = goog.require('goog.events.EventType');
@@ -10,11 +13,9 @@ const DataManager = goog.require('os.data.DataManager');
 const RecordField = goog.require('os.data.RecordField');
 const OSEventType = goog.require('os.events.EventType');
 const AbstractExporter = goog.require('os.ex.AbstractExporter');
-const osMap = goog.require('os.map');
 const {getMapContainer} = goog.require('os.map.instance');
 const {EPSG4326} = goog.require('os.proj');
 const ThreadProgressEvent = goog.require('os.thread.ThreadProgressEvent');
-const {getElectron, getWorker, ExportCommands, MsgType} = goog.require('plugin.geopackage');
 
 const Feature = goog.requireType('ol.Feature');
 const ColumnDefinition = goog.requireType('os.data.ColumnDefinition');
@@ -64,7 +65,7 @@ const mapColumnDefToColumn = (colDef) => {
  * The GeoPackage exporter.
  * @extends {AbstractExporter<Feature>}
  */
-class Exporter extends AbstractExporter {
+export class Exporter extends AbstractExporter {
   /**
    * Constructor.
    */
@@ -325,7 +326,7 @@ class Exporter extends AbstractExporter {
     const worker = getWorker();
 
     const geojson = this.format.writeFeaturesObject(features, {
-      featureProjection: osMap.PROJECTION,
+      featureProjection: PROJECTION,
       dataProjection: EPSG4326,
       fields: this.fields
     });
@@ -374,6 +375,3 @@ class Exporter extends AbstractExporter {
     return null;
   }
 }
-
-
-exports = Exporter;
