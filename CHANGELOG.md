@@ -1,3 +1,10 @@
+## [1.7.7](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.6...v1.7.7) (2021-09-16)
+
+
+### Bug Fixes
+
+* **goog:** fix module paths ([de48c47](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/de48c47693dc249d9689605ae510ff0deb1bd734))
+
 ## [1.7.6](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.5...v1.7.6) (2021-08-25)
 
 
