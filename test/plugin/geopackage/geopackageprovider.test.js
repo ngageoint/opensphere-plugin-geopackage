@@ -1,7 +1,15 @@
+goog.require('os.data.DataProviderEventType');
+goog.require('os.layer.LayerType');
+goog.require('os.ui.Icons');
+goog.require('os.ui.data.BaseProvider');
 goog.require('plugin.geopackage.GeoPackageProvider');
 
 
 describe('plugin.geopackage.GeoPackageProvider', function() {
+  const DataProviderEventType = goog.module.get('os.data.DataProviderEventType');
+  const LayerType = goog.module.get('os.layer.LayerType');
+  const Icons = goog.module.get('os.ui.Icons');
+  const BaseProvider = goog.module.get('os.ui.data.BaseProvider');
   const {GeoPackageProvider} = goog.module.get('plugin.geopackage.GeoPackageProvider');
 
   const baseUrl = '/base/test/resources/geopackage/';
@@ -30,7 +38,7 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
       count++;
     };
 
-    p.listen(os.data.DataProviderEventType.LOADED, listener);
+    p.listen(DataProviderEventType.LOADED, listener);
 
     runs(function() {
       p.load();
@@ -42,13 +50,13 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
 
     runs(function() {
       const children = p.getChildren();
-      const prefix = p.getId() + os.ui.data.BaseProvider.ID_DELIMITER;
+      const prefix = p.getId() + BaseProvider.ID_DELIMITER;
 
       const expected = [{
         id: prefix + 'byte_jpeg',
         title: 'byte_jpeg',
-        layerType: os.layer.LayerType.TILES,
-        icons: os.ui.Icons.TILES,
+        layerType: LayerType.TILES,
+        icons: Icons.TILES,
         gpkgMinZoom: 0,
         gpkgMaxZoom: 0,
         projection: 'EPSG:26711',
@@ -57,8 +65,8 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
       }, {
         id: prefix + 'byte_png',
         title: 'byte_png',
-        layerType: os.layer.LayerType.TILES,
-        icons: os.ui.Icons.TILES,
+        layerType: LayerType.TILES,
+        icons: Icons.TILES,
         gpkgMinZoom: 0,
         gpkgMaxZoom: 0,
         projection: 'EPSG:26711',
@@ -67,83 +75,83 @@ describe('plugin.geopackage.GeoPackageProvider', function() {
       }, {
         id: prefix + 'geomcollection2d',
         title: 'geomcollection2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'geomcollection3d',
         title: 'geomcollection3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'geometry2d',
         title: 'geometry2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'geometry3d',
         title: 'geometry3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'linestring2d',
         title: 'linestring2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'linestring3d',
         title: 'linestring3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'multilinestring2d',
         title: 'multilinestring2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'multilinestring3d',
         title: 'multilinestring3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'multipoint2d',
         title: 'multipoint2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'multipoint3d',
         title: 'multipoint3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'multipolygon2d',
         title: 'multipolygon2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'multipolygon3d',
         title: 'multipolygon3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'point2d',
         title: 'point2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES + os.ui.Icons.TIME
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES + Icons.TIME
       }, {
         id: prefix + 'point3d',
         title: 'point3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'polygon2d',
         title: 'polygon2d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }, {
         id: prefix + 'polygon3d',
         title: 'polygon3d',
-        layerType: os.layer.LayerType.FEATURES,
-        icons: os.ui.Icons.FEATURES
+        layerType: LayerType.FEATURES,
+        icons: Icons.FEATURES
       }];
 
       expect(children.length).toBe(expected.length);

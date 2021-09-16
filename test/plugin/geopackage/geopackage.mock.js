@@ -8,6 +8,7 @@ const SameDomainHandler = goog.require('os.net.SameDomainHandler');
 
 const SettingsUtil = goog.require('test.os.config.SettingsUtil');
 
+
 beforeEach(() => {
   // Initialize settings
   const settings = Settings.getInstance();
