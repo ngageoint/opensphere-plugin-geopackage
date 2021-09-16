@@ -16,6 +16,7 @@ const AbstractExporter = goog.require('os.ex.AbstractExporter');
 const {getMapContainer} = goog.require('os.map.instance');
 const {EPSG4326} = goog.require('os.proj');
 const ThreadProgressEvent = goog.require('os.thread.ThreadProgressEvent');
+const TimeRange = goog.require('os.time.TimeRange');
 
 const Feature = goog.requireType('ol.Feature');
 const ColumnDefinition = goog.requireType('os.data.ColumnDefinition');
@@ -339,7 +340,7 @@ export class Exporter extends AbstractExporter {
       if (itime) {
         props[RECORD_TIME_START_FIELD] = new Date(itime.getStart()).toISOString();
 
-        if (itime instanceof os.time.TimeRange) {
+        if (itime instanceof TimeRange) {
           props[RECORD_TIME_STOP_FIELD] = new Date(itime.getEnd()).toISOString();
         }
       }
