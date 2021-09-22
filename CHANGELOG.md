@@ -1,3 +1,10 @@
+## [1.7.8](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.7...v1.7.8) (2021-09-22)
+
+
+### Bug Fixes
+
+* **import:** sort import statements ([6695306](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/66953065da113f4ffc6ec378a749d8825d4a658a))
+
 ## [1.7.7](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.6...v1.7.7) (2021-09-16)
 
 
