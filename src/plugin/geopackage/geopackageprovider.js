@@ -1,7 +1,7 @@
 goog.declareModuleId('plugin.geopackage.GeoPackageProvider');
 
-import {getWorker, isElectron, MsgType, ID} from './geopackage.js';
-import {MIN_ZOOM, MAX_ZOOM} from 'opensphere/src/os/map/map.js';
+import {MAX_ZOOM, MIN_ZOOM} from 'opensphere/src/os/map/map.js';
+import {ID, MsgType, getWorker, isElectron} from './geopackage.js';
 
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
