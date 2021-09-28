@@ -1,27 +1,27 @@
 goog.declareModuleId('plugin.geopackage.Exporter');
 
+import AlertEventSeverity from 'opensphere/src/os/alert/alerteventseverity.js';
+import AlertManager from 'opensphere/src/os/alert/alertmanager.js';
+import DataManager from 'opensphere/src/os/data/datamanager.js';
+import RecordField from 'opensphere/src/os/data/recordfield.js';
+import OSEventType from 'opensphere/src/os/events/eventtype.js';
+import AbstractExporter from 'opensphere/src/os/ex/abstractexporter.js';
 import {PROJECTION} from 'opensphere/src/os/map/map.js';
+import {getMapContainer} from 'opensphere/src/os/map/mapinstance.js';
+import {EPSG4326} from 'opensphere/src/os/proj/proj.js';
+import ThreadProgressEvent from 'opensphere/src/os/thread/threadprogressevent.js';
+import TimeRange from 'opensphere/src/os/time/timerange.js';
 import {getElectron, getWorker, ExportCommands, MsgType} from './geopackage.js';
 
 const {bucket} = goog.require('goog.array');
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
 const GeoJSON = goog.require('ol.format.GeoJSON');
-const AlertManager = goog.require('os.alert.AlertManager');
-const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
-const DataManager = goog.require('os.data.DataManager');
-const RecordField = goog.require('os.data.RecordField');
-const OSEventType = goog.require('os.events.EventType');
-const AbstractExporter = goog.require('os.ex.AbstractExporter');
-const {getMapContainer} = goog.require('os.map.instance');
-const {EPSG4326} = goog.require('os.proj');
-const ThreadProgressEvent = goog.require('os.thread.ThreadProgressEvent');
-const TimeRange = goog.require('os.time.TimeRange');
 
 const Feature = goog.requireType('ol.Feature');
-const ColumnDefinition = goog.requireType('os.data.ColumnDefinition');
-const ILayer = goog.requireType('os.layer.ILayer');
-const VectorSource = goog.requireType('os.source.Vector');
+const {default: ColumnDefinition} = goog.requireType('os.data.ColumnDefinition');
+const {default: ILayer} = goog.requireType('os.layer.ILayer');
+const {default: VectorSource} = goog.requireType('os.source.Vector');
 
 
 /**
