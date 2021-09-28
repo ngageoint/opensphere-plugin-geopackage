@@ -1,5 +1,7 @@
 goog.declareModuleId('plugin.geopackage.GeoPackagePlugin');
 
+import exportManager from 'opensphere/src/os/ui/file/uiexportmanager.js';
+import ImportManager from 'opensphere/src/os/ui/im/importmanager.js';
 import {ID} from './geopackage.js';
 import {Exporter} from './geopackageexporter.js';
 import {GeoPackageImportUI} from './geopackageimportui.js';
@@ -18,8 +20,6 @@ const LayerConfigManager = goog.require('os.layer.config.LayerConfigManager');
 const RequestHandlerFactory = goog.require('os.net.RequestHandlerFactory');
 const AbstractPlugin = goog.require('os.plugin.AbstractPlugin');
 const PluginManager = goog.require('os.plugin.PluginManager');
-const ImportManager = goog.require('os.ui.im.ImportManager');
-const exportManager = goog.require('os.ui.exportManager');
 
 
 /**

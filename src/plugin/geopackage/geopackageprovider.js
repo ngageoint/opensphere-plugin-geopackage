@@ -1,6 +1,11 @@
 goog.declareModuleId('plugin.geopackage.GeoPackageProvider');
 
 import {MAX_ZOOM, MIN_ZOOM} from 'opensphere/src/os/map/map.js';
+import BaseProvider from 'opensphere/src/os/ui/data/baseprovider.js';
+import DescriptorNode from 'opensphere/src/os/ui/data/descriptornode.js';
+import {directiveTag} from 'opensphere/src/os/ui/data/layercheckbox.js';
+import Icons from 'opensphere/src/os/ui/icons.js';
+import AbstractLoadingServer from 'opensphere/src/os/ui/server/abstractloadingserver.js';
 import {ID, MsgType, getWorker, isElectron} from './geopackage.js';
 
 const GoogEventType = goog.require('goog.events.EventType');
@@ -16,11 +21,6 @@ const DataManager = goog.require('os.data.DataManager');
 const {isFileSystem} = goog.require('os.file');
 const LayerType = goog.require('os.layer.LayerType');
 const Request = goog.require('os.net.Request');
-const Icons = goog.require('os.ui.Icons');
-const BaseProvider = goog.require('os.ui.data.BaseProvider');
-const DescriptorNode = goog.require('os.ui.data.DescriptorNode');
-const {directiveTag} = goog.require('os.ui.data.LayerCheckboxUI');
-const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer');
 
 const GoogEvent = goog.requireType('goog.events.Event');
 const ITreeNode = goog.requireType('os.structs.ITreeNode');

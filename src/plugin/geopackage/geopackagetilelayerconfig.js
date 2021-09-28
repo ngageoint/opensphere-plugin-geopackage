@@ -1,6 +1,7 @@
 goog.declareModuleId('plugin.geopackage.TileLayerConfig');
 
 import {PROJECTION} from 'opensphere/src/os/map/map.js';
+import BaseProvider from 'opensphere/src/os/ui/data/baseprovider.js';
 import {MsgType, getWorker} from './geopackage.js';
 import {Tile} from './geopackagetile.js';
 
@@ -13,9 +14,8 @@ const {transformExtent} = goog.require('ol.proj');
 const TileImage = goog.require('ol.source.TileImage');
 const {createForProjection} = goog.require('ol.tilegrid');
 const TileGrid = goog.require('ol.tilegrid.TileGrid');
-const {EPSG4326} = goog.require('os.proj');
 const AbstractTileLayerConfig = goog.require('os.layer.config.AbstractTileLayerConfig');
-const BaseProvider = goog.require('os.ui.data.BaseProvider');
+const {EPSG4326} = goog.require('os.proj');
 
 const Projection = goog.requireType('ol.proj.Projection');
 

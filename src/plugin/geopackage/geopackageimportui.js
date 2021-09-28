@@ -1,21 +1,22 @@
 goog.declareModuleId('plugin.geopackage.GeoPackageImportUI');
 
+import AbstractImportUI from 'opensphere/src/os/ui/im/abstractimportui.js';
+import * as windows from 'opensphere/src/os/ui/menu/windowsmenu.js';
 import {ID} from './geopackage.js';
 import {GeoPackageProvider} from './geopackageprovider.js';
 
-const AbstractImportUI = goog.require('os.ui.im.AbstractImportUI');
 const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
 const AlertManager = goog.require('os.alert.AlertManager');
 const Settings = goog.require('os.config.Settings');
 const DataManager = goog.require('os.data.DataManager');
 const DataProviderEventType = goog.require('os.data.DataProviderEventType');
-const FileStorage = goog.require('os.file.FileStorage');
-const OSFile = goog.requireType('os.file.File');
-const windows = goog.require('os.ui.menu.windows');
 const {isLocal, isFileUrlEnabled} = goog.require('os.file');
 
+const FileStorage = goog.require('os.file.FileStorage');
+
 const DataProviderEvent = goog.requireType('os.data.DataProviderEvent');
-const DescriptorNode = goog.requireType('os.ui.data.DescriptorNode');
+const OSFile = goog.requireType('os.file.File');
+const {default: DescriptorNode} = goog.requireType('os.ui.data.DescriptorNode');
 
 
 /**
