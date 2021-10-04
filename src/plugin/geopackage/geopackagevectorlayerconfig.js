@@ -1,21 +1,20 @@
 goog.declareModuleId('plugin.geopackage.VectorLayerConfig');
 
+import AltMapping from 'opensphere/src/os/im/mapping/altmapping.js';
+import RadiusMapping from 'opensphere/src/os/im/mapping/radiusmapping.js';
+import SemiMajorMapping from 'opensphere/src/os/im/mapping/semimajormapping.js';
+import SemiMinorMapping from 'opensphere/src/os/im/mapping/semiminormapping.js';
+import DateTimeMapping from 'opensphere/src/os/im/mapping/time/datetimemapping.js';
+import TimeFormat from 'opensphere/src/os/im/mapping/timeformat.js';
+import TimeType from 'opensphere/src/os/im/mapping/timetype.js';
+import FeatureType from 'opensphere/src/os/ogc/wfs/featuretype.js';
 import GeoJSONLayerConfig from 'opensphere/src/plugin/file/geojson/geojsonlayerconfig.js';
 
-const AltMapping = goog.require('os.im.mapping.AltMapping');
-const RadiusMapping = goog.require('os.im.mapping.RadiusMapping');
-const SemiMajorMapping = goog.require('os.im.mapping.SemiMajorMapping');
-const SemiMinorMapping = goog.require('os.im.mapping.SemiMinorMapping');
-const TimeFormat = goog.require('os.im.mapping.TimeFormat');
-const TimeType = goog.require('os.im.mapping.TimeType');
-const DateTimeMapping = goog.require('os.im.mapping.time.DateTimeMapping');
-const FeatureType = goog.require('os.ogc.wfs.FeatureType');
-
-const Importer = goog.requireType('os.im.Importer');
-const VectorLayer = goog.requireType('os.layer.Vector');
-const FeatureTypeColumn = goog.requireType('os.ogc.FeatureTypeColumn');
-const IFeatureType = goog.requireType('os.ogc.IFeatureType');
-const Request = goog.requireType('os.source.Request');
+const {default: Importer} = goog.requireType('os.im.Importer');
+const {default: VectorLayer} = goog.requireType('os.layer.Vector');
+const {default: FeatureTypeColumn} = goog.requireType('os.ogc.FeatureTypeColumn');
+const {default: IFeatureType} = goog.requireType('os.ogc.IFeatureType');
+const {default: Request} = goog.requireType('os.source.Request');
 
 
 /**

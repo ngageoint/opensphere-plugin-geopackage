@@ -1,9 +1,10 @@
 goog.declareModuleId('plugin.geopackage.mime');
 
-const Promise = goog.require('goog.Promise');
-const {register} = goog.require('os.file.mime');
+import {register} from 'opensphere/src/os/file/mime.js';
 
-const OSFile = goog.requireType('os.file.File');
+const Promise = goog.require('goog.Promise');
+
+const {default: OSFile} = goog.requireType('os.file.File');
 
 
 /**

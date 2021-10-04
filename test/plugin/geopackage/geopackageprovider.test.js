@@ -6,10 +6,10 @@ goog.require('plugin.geopackage.GeoPackageProvider');
 
 
 describe('plugin.geopackage.GeoPackageProvider', function() {
-  const DataProviderEventType = goog.module.get('os.data.DataProviderEventType');
-  const LayerType = goog.module.get('os.layer.LayerType');
-  const Icons = goog.module.get('os.ui.Icons');
-  const BaseProvider = goog.module.get('os.ui.data.BaseProvider');
+  const {default: DataProviderEventType} = goog.module.get('os.data.DataProviderEventType');
+  const {default: LayerType} = goog.module.get('os.layer.LayerType');
+  const {default: Icons} = goog.module.get('os.ui.Icons');
+  const {default: BaseProvider} = goog.module.get('os.ui.data.BaseProvider');
   const {GeoPackageProvider} = goog.module.get('plugin.geopackage.GeoPackageProvider');
 
   const baseUrl = '/base/test/resources/geopackage/';

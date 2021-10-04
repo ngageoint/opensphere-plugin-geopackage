@@ -1,10 +1,10 @@
 goog.module('plugin.geopackage.mock');
 
-const Settings = goog.require('os.config.Settings');
-const SettingsObjectStorage = goog.require('os.config.storage.SettingsObjectStorage');
-const ExtDomainHandler = goog.require('os.net.ExtDomainHandler');
+const {default: Settings} = goog.require('os.config.Settings');
+const {default: SettingsObjectStorage} = goog.require('os.config.storage.SettingsObjectStorage');
+const {default: ExtDomainHandler} = goog.require('os.net.ExtDomainHandler');
 const RequestHandlerFactory = goog.require('os.net.RequestHandlerFactory');
-const SameDomainHandler = goog.require('os.net.SameDomainHandler');
+const {default: SameDomainHandler} = goog.require('os.net.SameDomainHandler');
 
 const SettingsUtil = goog.require('test.os.config.SettingsUtil');
 

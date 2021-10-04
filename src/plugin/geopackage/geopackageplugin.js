@@ -1,5 +1,16 @@
 goog.declareModuleId('plugin.geopackage.GeoPackagePlugin');
 
+import DataManager from 'opensphere/src/os/data/datamanager.js';
+import DataProviderEventType from 'opensphere/src/os/data/dataprovidereventtype.js';
+import ProviderEntry from 'opensphere/src/os/data/providerentry.js';
+import FileStorage from 'opensphere/src/os/file/filestorage.js';
+import {isLocal} from 'opensphere/src/os/file/index.js';
+import LayerConfigManager from 'opensphere/src/os/layer/config/layerconfigmanager.js';
+import * as RequestHandlerFactory from 'opensphere/src/os/net/requesthandlerfactory.js';
+import AbstractPlugin from 'opensphere/src/os/plugin/abstractplugin.js';
+import PluginManager from 'opensphere/src/os/plugin/pluginmanager.js';
+import exportManager from 'opensphere/src/os/ui/file/uiexportmanager.js';
+import ImportManager from 'opensphere/src/os/ui/im/importmanager.js';
 import {ID} from './geopackage.js';
 import {Exporter} from './geopackageexporter.js';
 import {GeoPackageImportUI} from './geopackageimportui.js';
@@ -8,18 +19,6 @@ import {RequestHandler} from './geopackagerequesthandler.js';
 import {TileLayerConfig} from './geopackagetilelayerconfig.js';
 import {VectorLayerConfig} from './geopackagevectorlayerconfig.js';
 import {TYPE} from './mime.js';
-
-const DataManager = goog.require('os.data.DataManager');
-const DataProviderEventType = goog.require('os.data.DataProviderEventType');
-const ProviderEntry = goog.require('os.data.ProviderEntry');
-const {isLocal} = goog.require('os.file');
-const FileStorage = goog.require('os.file.FileStorage');
-const LayerConfigManager = goog.require('os.layer.config.LayerConfigManager');
-const RequestHandlerFactory = goog.require('os.net.RequestHandlerFactory');
-const AbstractPlugin = goog.require('os.plugin.AbstractPlugin');
-const PluginManager = goog.require('os.plugin.PluginManager');
-const ImportManager = goog.require('os.ui.im.ImportManager');
-const exportManager = goog.require('os.ui.exportManager');
 
 
 /**

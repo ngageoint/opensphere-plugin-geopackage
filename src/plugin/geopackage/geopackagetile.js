@@ -1,6 +1,6 @@
 goog.declareModuleId('plugin.geopackage.Tile');
 
-const ColorableTile = goog.require('os.tile.ColorableTile');
+import ColorableTile from 'opensphere/src/os/tile/colorabletile.js';
 
 
 /**

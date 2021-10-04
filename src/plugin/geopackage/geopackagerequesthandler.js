@@ -8,7 +8,7 @@ const log = goog.require('goog.log');
 const NetEventType = goog.require('goog.net.EventType');
 
 const Logger = goog.requireType('goog.log.Logger');
-const IRequestHandler = goog.requireType('os.net.IRequestHandler');
+const {default: IRequestHandler} = goog.requireType('os.net.IRequestHandler');
 
 
 /**

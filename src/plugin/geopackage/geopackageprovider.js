@@ -1,6 +1,18 @@
 goog.declareModuleId('plugin.geopackage.GeoPackageProvider');
 
+import AlertEventSeverity from 'opensphere/src/os/alert/alerteventseverity.js';
+import AlertManager from 'opensphere/src/os/alert/alertmanager.js';
+import ConfigDescriptor from 'opensphere/src/os/data/configdescriptor.js';
+import DataManager from 'opensphere/src/os/data/datamanager.js';
+import {isFileSystem} from 'opensphere/src/os/file/index.js';
+import LayerType from 'opensphere/src/os/layer/layertype.js';
 import {MAX_ZOOM, MIN_ZOOM} from 'opensphere/src/os/map/map.js';
+import Request from 'opensphere/src/os/net/request.js';
+import BaseProvider from 'opensphere/src/os/ui/data/baseprovider.js';
+import DescriptorNode from 'opensphere/src/os/ui/data/descriptornode.js';
+import {directiveTag} from 'opensphere/src/os/ui/data/layercheckbox.js';
+import Icons from 'opensphere/src/os/ui/icons.js';
+import AbstractLoadingServer from 'opensphere/src/os/ui/server/abstractloadingserver.js';
 import {ID, MsgType, getWorker, isElectron} from './geopackage.js';
 
 const GoogEventType = goog.require('goog.events.EventType');
@@ -9,21 +21,8 @@ const NetEventType = goog.require('goog.net.EventType');
 const ResponseType = goog.require('goog.net.XhrIo.ResponseType');
 const {makeSafe, intAwareCompare} = goog.require('goog.string');
 
-const AlertEventSeverity = goog.require('os.alert.AlertEventSeverity');
-const AlertManager = goog.require('os.alert.AlertManager');
-const ConfigDescriptor = goog.require('os.data.ConfigDescriptor');
-const DataManager = goog.require('os.data.DataManager');
-const {isFileSystem} = goog.require('os.file');
-const LayerType = goog.require('os.layer.LayerType');
-const Request = goog.require('os.net.Request');
-const Icons = goog.require('os.ui.Icons');
-const BaseProvider = goog.require('os.ui.data.BaseProvider');
-const DescriptorNode = goog.require('os.ui.data.DescriptorNode');
-const {directiveTag} = goog.require('os.ui.data.LayerCheckboxUI');
-const AbstractLoadingServer = goog.require('os.ui.server.AbstractLoadingServer');
-
 const GoogEvent = goog.requireType('goog.events.Event');
-const ITreeNode = goog.requireType('os.structs.ITreeNode');
+const {default: ITreeNode} = goog.requireType('os.structs.ITreeNode');
 
 
 /**
