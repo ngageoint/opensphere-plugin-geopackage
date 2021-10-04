@@ -1,3 +1,10 @@
+## [1.7.9](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.8...v1.7.9) (2021-10-04)
+
+
+### Bug Fixes
+
+* **es:** convert requires to imports ([6507649](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/650764952fe3833f71dbaa6ae2e3fb4de99f14df))
+
 ## [1.7.8](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.7...v1.7.8) (2021-09-22)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "opensphere-plugin-geopackage",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "description": "Adds GeoPackage support to OpenSphere",
   "main": "index.js",
   "directories": {
