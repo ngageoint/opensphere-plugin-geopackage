@@ -29,6 +29,22 @@ var GeoPackage = null;
 
 
 /**
+ * The left boundary to use when normalizing a tile extent. This is used to account for Cesium creating tile bounds
+ * very close to +/- 180.
+ * @type {number}
+ */
+const tileLeftBoundary = -180 - 1E-12;
+
+
+/**
+ * The right boundary to use when normalizing a tile extent. This is used to account for Cesium creating tile bounds
+ * very close to +/- 180.
+ * @type {number}
+ */
+const tileRightBoundary = 180 + 1E-12;
+
+
+/**
  * Normalize a tile boundary extent.
  * @param {Array<number>} extent The extent.
  */
@@ -41,15 +57,15 @@ const normalizeTileExtent = function(extent) {
     // Whole world, just use +/- 180.
     left = -180;
     right = 180;
-  } else if (left < -180) {
+  } else if (left < tileLeftBoundary) {
     // Wrapped left, shift right into +/- 180.
-    while (left < -180) {
+    while (left < tileLeftBoundary) {
       left += 360;
       right += 360;
     }
-  } else if (right > 180) {
+  } else if (right > tileRightBoundary) {
     // Wrapped right, shift left into +/- 180.
-    while (right > 180) {
+    while (right > tileRightBoundary) {
       left -= 360;
       right -= 360;
     }
