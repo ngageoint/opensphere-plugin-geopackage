@@ -245,40 +245,6 @@ var tileMatrixToTileSize = function(tileMatrix) {
 
 
 /**
- * OpenLayers does not permit resolution arrays with null/undefined values.
- * We'll invent some numbers. The minZoom will save the invented numbers from
- * actually being accessed in any real sense.
- * @param {Array<?number>} resolutions
- * @return {Array<!number>} resolutions
- */
-var fixResolutions = function(resolutions) {
-  var first = -1;
-  var second = -1;
-
-  for (var i = 0, n = resolutions.length; i < n; i++) {
-    if (resolutions[i] != null) {
-      first = resolutions[i];
-      break;
-    }
-  }
-
-  if (resolutions.length - i > 1) {
-    second = resolutions[i + 1];
-  }
-
-  if (first > -1) {
-    var zoomFactor = second > -1 ? first / second : 2;
-
-    while (i--) {
-      resolutions[i] = resolutions[i + 1] * zoomFactor;
-    }
-  }
-
-  return resolutions;
-};
-
-
-/**
  * Cesium must have a full tile pyramid (ugh), and so we let it have one and then
  * feed it blank tiles. Due to the full pyramid, we can't have empty sizes on the
  * front of the tile array. Since these are just gonna result in blanks, just use
@@ -326,7 +292,7 @@ var listDescriptors = function(msg) {
             tableName: info.tableName,
             gpkgMinZoom: Math.round(info.minZoom),
             gpkgMaxZoom: Math.round(info.maxZoom),
-            resolutions: fixResolutions(tileMatrices.map(getTileMatrixToResolutionMapper(info))),
+            resolutions: tileMatrices.map(getTileMatrixToResolutionMapper(info)),
             tileSizes: fixSizes(tileMatrices.map(tileMatrixToTileSize))
           };
 
