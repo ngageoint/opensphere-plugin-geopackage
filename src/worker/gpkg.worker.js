@@ -29,29 +29,34 @@ var GeoPackage = null;
 
 
 /**
- * Normalizes a longitude value to the given range
- *
- * @param {number} lon
- * @param {number=} opt_min
- * @param {number=} opt_max
- * @return {number}
+ * Normalize a tile boundary extent.
+ * @param {Array<number>} extent The extent.
  */
-const normalizeLongitude = function(lon, opt_min, opt_max) {
-  if (opt_min !== undefined && opt_max !== undefined) {
-    while (lon < opt_min) {
-      lon += 360;
-    }
+const normalizeTileExtent = function(extent) {
+  // Make sure we start with numbers in the proper order (left < right).
+  let left = Math.min(extent[0], extent[2]);
+  let right = Math.max(extent[0], extent[2]);
 
-    while (lon > opt_max) {
-      lon -= 360;
+  if (right - left >= 360) {
+    // Whole world, just use +/- 180.
+    left = -180;
+    right = 180;
+  } else if (left < -180) {
+    // Wrapped left, shift right into +/- 180.
+    while (left < -180) {
+      left += 360;
+      right += 360;
     }
-
-    return lon;
-  } else {
-    return lon > 180 ? ((lon + 180) % 360) - 180 :
-      lon < -180 ? ((lon - 180) % 360) + 180 :
-        lon;
+  } else if (right > 180) {
+    // Wrapped right, shift left into +/- 180.
+    while (right > 180) {
+      left -= 360;
+      right -= 360;
+    }
   }
+
+  extent[0] = left;
+  extent[2] = right;
 };
 
 
@@ -425,8 +430,8 @@ var getTile = function(msg) {
 
     // the Geopackage lib doesn't like lat/lons outside of [-180, 180], so normalize the longitude values
     // before constructing our bounding box for each tile
-    extent[0] = normalizeLongitude(extent[0]);
-    extent[2] = normalizeLongitude(extent[2]);
+    normalizeTileExtent(extent);
+
     var bbox = new GeoPackage.BoundingBox(extent[0], extent[2], extent[1], extent[3]);
 
     // set the scaling for the layer on the retriever to ensure tiles come back outside the default range
