@@ -135,3 +135,53 @@ export const getWorker = () => {
 
   return worker;
 };
+
+
+/**
+ * A geopackage may provide null resolutions for zoom levels that are not defined by the layer. OpenLayers expects all
+ * resolutions to be defined, so this will fill in unknown resolutions.
+ * @param {Array<?number>} resolutions
+ */
+export const fixResolutions = function(resolutions) {
+  if (resolutions) {
+    let first;
+    let second;
+
+    let firstIndex = -1;
+    let secondIndex = -1;
+
+    // Find up to two known values.
+    for (let i = 0; i < resolutions.length; i++) {
+      if (resolutions[i] != null) {
+        if (firstIndex === -1) {
+          firstIndex = i;
+          first = resolutions[i];
+        } else if (secondIndex === -1) {
+          secondIndex = i;
+          second = resolutions[i];
+          break;
+        }
+      }
+    }
+
+    if (first != null) {
+      // Default zoom factor if only one value is known, based on a typical tile pyramid zoom factor.
+      let zoomFactor = 2;
+
+      // If the second is known, compute the zoom factor.
+      if (second != null) {
+        // The first and second values may be separated by unknown values, so we need to consider how far apart
+        // they are.
+        const spread = secondIndex - firstIndex;
+        zoomFactor = Math.pow(first / second, 1 / spread);
+      }
+
+      // Fill in unknown values using the first known value and zoom factor.
+      for (let i = 0; i < resolutions.length; i++) {
+        if (resolutions[i] == null) {
+          resolutions[i] = first * Math.pow(zoomFactor, firstIndex - i);
+        }
+      }
+    }
+  }
+};

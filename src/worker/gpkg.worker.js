@@ -29,29 +29,50 @@ var GeoPackage = null;
 
 
 /**
- * Normalizes a longitude value to the given range
- *
- * @param {number} lon
- * @param {number=} opt_min
- * @param {number=} opt_max
- * @return {number}
+ * The left boundary to use when normalizing a tile extent. This is used to account for Cesium creating tile bounds
+ * very close to +/- 180.
+ * @type {number}
  */
-const normalizeLongitude = function(lon, opt_min, opt_max) {
-  if (opt_min !== undefined && opt_max !== undefined) {
-    while (lon < opt_min) {
-      lon += 360;
-    }
+const tileLeftBoundary = -180 - 1E-12;
 
-    while (lon > opt_max) {
-      lon -= 360;
-    }
 
-    return lon;
-  } else {
-    return lon > 180 ? ((lon + 180) % 360) - 180 :
-      lon < -180 ? ((lon - 180) % 360) + 180 :
-        lon;
+/**
+ * The right boundary to use when normalizing a tile extent. This is used to account for Cesium creating tile bounds
+ * very close to +/- 180.
+ * @type {number}
+ */
+const tileRightBoundary = 180 + 1E-12;
+
+
+/**
+ * Normalize a tile boundary extent.
+ * @param {Array<number>} extent The extent.
+ */
+const normalizeTileExtent = function(extent) {
+  // Make sure we start with numbers in the proper order (left < right).
+  let left = Math.min(extent[0], extent[2]);
+  let right = Math.max(extent[0], extent[2]);
+
+  if (right - left >= 360) {
+    // Whole world, just use +/- 180.
+    left = -180;
+    right = 180;
+  } else if (left < tileLeftBoundary) {
+    // Wrapped left, shift right into +/- 180.
+    while (left < tileLeftBoundary) {
+      left += 360;
+      right += 360;
+    }
+  } else if (right > tileRightBoundary) {
+    // Wrapped right, shift left into +/- 180.
+    while (right > tileRightBoundary) {
+      left -= 360;
+      right -= 360;
+    }
   }
+
+  extent[0] = left;
+  extent[2] = right;
 };
 
 
@@ -245,40 +266,6 @@ var tileMatrixToTileSize = function(tileMatrix) {
 
 
 /**
- * OpenLayers does not permit resolution arrays with null/undefined values.
- * We'll invent some numbers. The minZoom will save the invented numbers from
- * actually being accessed in any real sense.
- * @param {Array<?number>} resolutions
- * @return {Array<!number>} resolutions
- */
-var fixResolutions = function(resolutions) {
-  var first = -1;
-  var second = -1;
-
-  for (var i = 0, n = resolutions.length; i < n; i++) {
-    if (resolutions[i] != null) {
-      first = resolutions[i];
-      break;
-    }
-  }
-
-  if (resolutions.length - i > 1) {
-    second = resolutions[i + 1];
-  }
-
-  if (first > -1) {
-    var zoomFactor = second > -1 ? first / second : 2;
-
-    while (i--) {
-      resolutions[i] = resolutions[i + 1] * zoomFactor;
-    }
-  }
-
-  return resolutions;
-};
-
-
-/**
  * Cesium must have a full tile pyramid (ugh), and so we let it have one and then
  * feed it blank tiles. Due to the full pyramid, we can't have empty sizes on the
  * front of the tile array. Since these are just gonna result in blanks, just use
@@ -326,7 +313,7 @@ var listDescriptors = function(msg) {
             tableName: info.tableName,
             gpkgMinZoom: Math.round(info.minZoom),
             gpkgMaxZoom: Math.round(info.maxZoom),
-            resolutions: fixResolutions(tileMatrices.map(getTileMatrixToResolutionMapper(info))),
+            resolutions: tileMatrices.map(getTileMatrixToResolutionMapper(info)),
             tileSizes: fixSizes(tileMatrices.map(tileMatrixToTileSize))
           };
 
@@ -459,8 +446,8 @@ var getTile = function(msg) {
 
     // the Geopackage lib doesn't like lat/lons outside of [-180, 180], so normalize the longitude values
     // before constructing our bounding box for each tile
-    extent[0] = normalizeLongitude(extent[0]);
-    extent[2] = normalizeLongitude(extent[2]);
+    normalizeTileExtent(extent);
+
     var bbox = new GeoPackage.BoundingBox(extent[0], extent[2], extent[1], extent[3]);
 
     // set the scaling for the layer on the retriever to ensure tiles come back outside the default range

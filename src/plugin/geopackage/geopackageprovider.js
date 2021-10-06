@@ -13,7 +13,7 @@ import DescriptorNode from 'opensphere/src/os/ui/data/descriptornode.js';
 import {directiveTag} from 'opensphere/src/os/ui/data/layercheckbox.js';
 import Icons from 'opensphere/src/os/ui/icons.js';
 import AbstractLoadingServer from 'opensphere/src/os/ui/server/abstractloadingserver.js';
-import {ID, MsgType, getWorker, isElectron} from './geopackage.js';
+import {ID, MsgType, fixResolutions, getWorker, isElectron} from './geopackage.js';
 
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
@@ -245,6 +245,11 @@ export class GeoPackageProvider extends AbstractLoadingServer {
     config['id'] = id;
     config['delayUpdateActive'] = true;
     config['provider'] = this.getLabel();
+
+    if (Array.isArray(config['resolutions'])) {
+      // Clean up the resolutions array to ensure OpenLayers doesn't have issues.
+      fixResolutions(/** @type {!Array<?number>} */ (config['resolutions']));
+    }
 
     if (config['type'] === ID + '-tile') {
       config['layerType'] = LayerType.TILES;
