@@ -1,3 +1,12 @@
+## [1.7.10](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.9...v1.7.10) (2021-10-06)
+
+
+### Bug Fixes
+
+* **tile:** detect tile boundaries close to +/- 180 ([b734fce](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/b734fce173d24dc021cf47ca636e7fc6239d75a8))
+* **tile:** fix extent normalization for tile boundaries ([325387b](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/325387b510d2b1c810cbecdccc34167e0956b842))
+* **tile:** fix resolutions in main process ([f63e7bb](https://github.com/ngageoint/opensphere-plugin-geopackage/commit/f63e7bb30df417c73783b129e3f515e06e0448db))
+
 ## [1.7.9](https://github.com/ngageoint/opensphere-plugin-geopackage/compare/v1.7.8...v1.7.9) (2021-10-04)
 
 
