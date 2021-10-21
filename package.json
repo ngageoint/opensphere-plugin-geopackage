@@ -90,7 +90,7 @@
     "@semantic-release/npm": "^5.1.4",
     "@semantic-release/release-notes-generator": "^7.1.4",
     "angular-mocks": "~1.8.x",
-    "eslint": "^7.26.0",
+    "eslint": "^8.0.1",
     "eslint-config-opensphere": "^6.0.2",
     "husky": "^3.0.2",
     "karma": "^4.3.0",
