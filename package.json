@@ -46,7 +46,8 @@
     "compile:resolve": "os-resolve --outputDir .build --exclude resources",
     "build": "echo 'Please run the build script in the opensphere project' && exit 1",
     "package:update": "if git diff --name-only ORIG_HEAD HEAD | grep --quiet package.json; then echo 'UPDATE: package.json updated, consider running yarn in the workspace root'; fi",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "postinstall": "husky install"
   },
   "keywords": [
     "opensphere",
@@ -92,7 +93,7 @@
     "angular-mocks": "~1.8.x",
     "eslint": "^8.0.1",
     "eslint-config-opensphere": "^6.0.2",
-    "husky": "^3.0.2",
+    "husky": "^7.0.4",
     "karma": "^4.3.0",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage-istanbul-reporter": "^3.0.3",
@@ -114,12 +115,5 @@
     "better-sqlite3": "7.4.1",
     "nan": "2.14.0",
     "opensphere": "0.0.0-development"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "post-merge": "npm run package:update",
-      "post-rewrite": "npm run package:update"
-    }
   }
 }
