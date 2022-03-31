@@ -1,5 +1,7 @@
 goog.declareModuleId('plugin.geopackage.Exporter');
 
+import GeoJSON from 'ol/src/format/GeoJSON.js';
+
 import AlertEventSeverity from 'opensphere/src/os/alert/alerteventseverity.js';
 import AlertManager from 'opensphere/src/os/alert/alertmanager.js';
 import DataManager from 'opensphere/src/os/data/datamanager.js';
@@ -16,9 +18,7 @@ import {getElectron, getWorker, ExportCommands, MsgType} from './geopackage.js';
 const {bucket} = goog.require('goog.array');
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
-const GeoJSON = goog.require('ol.format.GeoJSON');
 
-const Feature = goog.requireType('ol.Feature');
 const {default: ColumnDefinition} = goog.requireType('os.data.ColumnDefinition');
 const {default: ILayer} = goog.requireType('os.layer.ILayer');
 const {default: VectorSource} = goog.requireType('os.source.Vector');

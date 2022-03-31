@@ -1,5 +1,13 @@
 goog.declareModuleId('plugin.geopackage.TileLayerConfig');
 
+import ImageTile from 'ol/src/ImageTile.js';
+import {transformExtent} from 'ol/src/proj.js';
+import TileImage from 'ol/src/source/TileImage.js';
+import {createForProjection} from 'ol/src/tilegrid.js';
+import {DEFAULT_MAX_ZOOM} from 'ol/src/tilegrid/common.js';
+import TileGrid from 'ol/src/tilegrid/TileGrid.js';
+import TileState from 'ol/src/TileState.js';
+
 import AbstractTileLayerConfig from 'opensphere/src/os/layer/config/abstracttilelayerconfig.js';
 import {PROJECTION} from 'opensphere/src/os/map/map.js';
 import {EPSG4326} from 'opensphere/src/os/proj/proj.js';
@@ -9,15 +17,6 @@ import {Tile} from './geopackagetile.js';
 
 const GoogEventType = goog.require('goog.events.EventType');
 const log = goog.require('goog.log');
-const {DEFAULT_MAX_ZOOM} = goog.require('ol');
-const ImageTile = goog.require('ol.ImageTile');
-const TileState = goog.require('ol.TileState');
-const {transformExtent} = goog.require('ol.proj');
-const TileImage = goog.require('ol.source.TileImage');
-const {createForProjection} = goog.require('ol.tilegrid');
-const TileGrid = goog.require('ol.tilegrid.TileGrid');
-
-const Projection = goog.requireType('ol.proj.Projection');
 
 
 /**
