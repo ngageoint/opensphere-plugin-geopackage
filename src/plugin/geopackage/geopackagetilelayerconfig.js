@@ -1,6 +1,6 @@
 goog.declareModuleId('plugin.geopackage.TileLayerConfig');
 
-import ImageTile from 'ol/src/ImageTile.js';
+import {createCanvasContext2D} from 'ol/src/dom.js';
 import {transformExtent} from 'ol/src/proj.js';
 import TileImage from 'ol/src/source/TileImage.js';
 import {createForProjection} from 'ol/src/tilegrid.js';
@@ -179,7 +179,7 @@ const tileListener = (evt) => {
           // Tile is emtpy, so display a blank image. Note that TileState.EMPTY is NOT WHAT WE WANT.
           // Empty causes OpenLayers to keep displaying the parent tile for coverage. We want a blank
           // tile.
-          imageTile.image_ = ImageTile.getBlankImage();
+          imageTile.image_ = getBlankImage();
           imageTile.state = TileState.LOADED;
           imageTile.changed();
         }
@@ -191,6 +191,12 @@ const tileListener = (evt) => {
   }
 };
 
+const getBlankImage = () => {
+  const ctx = createCanvasContext2D(1, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0)';
+  ctx.fillRect(0, 0, 1, 1);
+  return ctx.canvas;
+};
 
 /**
  * @param {string} layerName The table name for the layer
