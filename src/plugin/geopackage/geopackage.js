@@ -1,14 +1,10 @@
 goog.declareModuleId('plugin.geopackage');
 
+import {ROOT} from 'opensphere/src/os/os.js';
+
 const log = goog.require('goog.log');
 
 const Logger = goog.requireType('goog.log.Logger');
-
-
-/**
- * @define {string}
- */
-export const ROOT = goog.define('plugin.geopackage.ROOT', '../opensphere-plugin-geopackage/');
 
 /**
  * @define {string}
@@ -87,7 +83,11 @@ export const isElectron = () => {
  */
 export const getWorker = () => {
   if (!worker) {
-    let src = ROOT + 'src/worker/gpkg.worker.js';
+    let appRoot = ROOT;
+    if (appRoot == '../opensphere/') {
+      appRoot = '../opensphere-plugin-geopackage/';
+    }
+    let src = appRoot + 'src/worker/gpkg.worker.js';
 
     const electron = getElectron();
     if (electron) {

@@ -21,7 +21,7 @@ module.exports = function(config) {
   const gpkgDefineSrc = `
     var CLOSURE_UNCOMPILED_DEFINES = {
       'plugin.geopackage.GPKG_PATH': '/absolute${gpkg}',
-      'plugin.geopackage.ROOT': 'base/'
+      'os.ROOT': 'base/'
     }`.trim();
   fs.writeFileSync(gpkgDefinePath, gpkgDefineSrc);
 
