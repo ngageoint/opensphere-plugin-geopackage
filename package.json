@@ -114,7 +114,7 @@
     "stylelint-config-opensphere": "^1.0.0"
   },
   "dependencies": {
-    "@ngageoint/geopackage": "4.1.0",
+    "@ngageoint/geopackage": "4.2.5",
     "better-sqlite3": "7.4.1",
     "nan": "2.14.0",
     "opensphere": "0.0.0-development"
