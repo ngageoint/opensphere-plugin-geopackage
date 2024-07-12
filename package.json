@@ -108,7 +108,7 @@
     "opensphere-build-closure-helper": "^7.0.0",
     "opensphere-build-resolver": "^10.0.0",
     "pinst": "^2.1.6",
-    "rimraf": "^3.0.2",
+    "rimraf": "5.0.7",
     "semantic-release": "24.0.0",
     "stylelint": "^14.0.0",
     "stylelint-config-opensphere": "^1.0.0"
